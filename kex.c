@@ -19,7 +19,7 @@ CRYPTO_STATUS KeyGeneration_A(unsigned char* pPrivateKeyA, unsigned char* pPubli
 { // Alice's key-pair generation
   // It produces a private key pPrivateKeyA and computes the public key pPublicKeyA.
   // The private key is an even integer in the range [2, oA-2], where oA = 2^372 (i.e., 372 bits in total). 
-  // The public key consists of 4 elements in GF(p751^2), i.e., 751 bytes in total.
+  // The public key consists of 3 elements in GF(p751^2), i.e., 564 bytes.
   // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
     unsigned int owords = NBITS_TO_NWORDS(CurveIsogeny->owordbits), pwords = NBITS_TO_NWORDS(CurveIsogeny->pwordbits);
     point_basefield_t P;
@@ -98,16 +98,14 @@ CRYPTO_STATUS KeyGeneration_A(unsigned char* pPrivateKeyA, unsigned char* pPubli
     eval_4_isog(phiQ, coeff);
     eval_4_isog(phiD, coeff);
 
-    inv_4_way(C, phiP->Z, phiQ->Z, phiD->Z);
-    fp2mul751_mont(A, C, A);
+    inv_3_way(phiP->Z, phiQ->Z, phiD->Z);
     fp2mul751_mont(phiP->X, phiP->Z, phiP->X);
     fp2mul751_mont(phiQ->X, phiQ->Z, phiQ->X);
     fp2mul751_mont(phiD->X, phiD->Z, phiD->X);
-
-    from_fp2mont(A, ((f2elm_t*)PublicKeyA)[0]);                                     // Converting back to standard representation
-    from_fp2mont(phiP->X, ((f2elm_t*)PublicKeyA)[1]);
-    from_fp2mont(phiQ->X, ((f2elm_t*)PublicKeyA)[2]);
-    from_fp2mont(phiD->X, ((f2elm_t*)PublicKeyA)[3]);
+                                   
+    from_fp2mont(phiP->X, ((f2elm_t*)PublicKeyA)[0]);                               // Converting back to standard representation
+    from_fp2mont(phiQ->X, ((f2elm_t*)PublicKeyA)[1]);
+    from_fp2mont(phiD->X, ((f2elm_t*)PublicKeyA)[2]);
 
 // Cleanup:
     clear_words((void*)R, 2*2*pwords);
@@ -127,7 +125,7 @@ CRYPTO_STATUS KeyGeneration_B(unsigned char* pPrivateKeyB, unsigned char* pPubli
 { // Bob's key-pair generation
   // It produces a private key pPrivateKeyB and computes the public key pPublicKeyB.
   // The private key is an integer in the range [1, oB-1], where oA = 3^239 (i.e., 379 bits in total). 
-  // The public key consists of 4 elements in GF(p751^2), i.e., 751 bytes in total.
+  // The public key consists of 3 elements in GF(p751^2), i.e., 564 bytes.
   // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
     unsigned int owords = NBITS_TO_NWORDS(CurveIsogeny->owordbits), pwords = NBITS_TO_NWORDS(CurveIsogeny->pwordbits);
     point_basefield_t P;
@@ -201,16 +199,14 @@ CRYPTO_STATUS KeyGeneration_B(unsigned char* pPrivateKeyB, unsigned char* pPubli
     eval_3_isog(R, phiQ);
     eval_3_isog(R, phiD);
 
-    inv_4_way(C, phiP->Z, phiQ->Z, phiD->Z);
-    fp2mul751_mont(A, C, A);
+    inv_3_way(phiP->Z, phiQ->Z, phiD->Z);
     fp2mul751_mont(phiP->X, phiP->Z, phiP->X);
     fp2mul751_mont(phiQ->X, phiQ->Z, phiQ->X);
     fp2mul751_mont(phiD->X, phiD->Z, phiD->X);
-
-    from_fp2mont(A, ((f2elm_t*)PublicKeyB)[0]);                                     // Converting back to standard representation
-    from_fp2mont(phiP->X, ((f2elm_t*)PublicKeyB)[1]);
-    from_fp2mont(phiQ->X, ((f2elm_t*)PublicKeyB)[2]);
-    from_fp2mont(phiD->X, ((f2elm_t*)PublicKeyB)[3]);
+                                   
+    from_fp2mont(phiP->X, ((f2elm_t*)PublicKeyB)[0]);                               // Converting back to standard representation
+    from_fp2mont(phiQ->X, ((f2elm_t*)PublicKeyB)[1]);
+    from_fp2mont(phiD->X, ((f2elm_t*)PublicKeyB)[2]);
 
 // Cleanup:
     clear_words((void*)R, 2*2*pwords);
@@ -225,33 +221,46 @@ CRYPTO_STATUS KeyGeneration_B(unsigned char* pPrivateKeyB, unsigned char* pPubli
 }
 
 
-CRYPTO_STATUS SecretAgreement_A(unsigned char* pPrivateKeyA, unsigned char* pPublicKeyB, unsigned char* pSharedSecretA, PCurveIsogenyStruct CurveIsogeny)
+CRYPTO_STATUS SecretAgreement_A(unsigned char* pPrivateKeyA, unsigned char* pPublicKeyB, unsigned char* pSharedSecretA, bool validate, PCurveIsogenyStruct CurveIsogeny)
 { // Alice's shared secret generation
   // It produces a shared secret key pSharedSecretA using her secret key pPrivateKeyA and Bob's public key pPublicKeyB
   // Inputs: Alice's pPrivateKeyA is an even integer in the range [2, oA-2], where oA = 2^372 (i.e., 372 bits in total). 
-  //         Bob's pPublicKeyB consists of 4 elements in GF(p751^2), i.e., 751 bytes in total.
+  //         Bob's pPublicKeyB consists of 3 elements in GF(p751^2), i.e., 564 bytes.
+  //         "validate" flag that indicates if Alice must validate Bob's public key. 
   // Output: a shared secret pSharedSecretA that consists of one element in GF(p751^2), i.e., 1502 bits in total. 
   // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
     unsigned int pwords = NBITS_TO_NWORDS(CurveIsogeny->pwordbits);
     unsigned int i, row, m, index = 0, pts_index[MAX_INT_POINTS_ALICE], npts = 0; 
     point_proj_t R, pts[MAX_INT_POINTS_ALICE];
     publickey_t* PublicKeyB = (publickey_t*)pPublicKeyB;
-    f2elm_t jinv, coeff[5], A, C = {0}, PKB2, PKB3, PKB4;
-    CRYPTO_STATUS Status = CRYPTO_ERROR_UNKNOWN;  
+    f2elm_t jinv, coeff[5], PKB[3], A, C = {0};
+    bool valid_PublicKey = false; 
+    CRYPTO_STATUS Status = CRYPTO_ERROR_UNKNOWN; 
 
     if (pPrivateKeyA == NULL || pPublicKeyB == NULL || pSharedSecretA == NULL || is_CurveIsogenyStruct_null(CurveIsogeny)) {
         return CRYPTO_ERROR_INVALID_PARAMETER;
     }
+      
+    to_fp2mont(((f2elm_t*)PublicKeyB)[0], PKB[0]);    // Extracting and converting Bob's public curve parameters to Montgomery representation
+    to_fp2mont(((f2elm_t*)PublicKeyB)[1], PKB[1]);        
+    to_fp2mont(((f2elm_t*)PublicKeyB)[2], PKB[2]);
 
-    to_fp2mont(((f2elm_t*)PublicKeyB)[0], A);         // Extracting and converting Bob's public curve parameters to Montgomery representation
-    to_fp2mont(((f2elm_t*)PublicKeyB)[1], PKB2);
-    to_fp2mont(((f2elm_t*)PublicKeyB)[2], PKB3);        
-    to_fp2mont(((f2elm_t*)PublicKeyB)[3], PKB4);
-
+    get_A(PKB[0], PKB[1], PKB[2], A, CurveIsogeny);
     fpcopy751(CurveIsogeny->C, C[0]);
     to_mont(C[0], C[0]);
 
-    Status = ladder_3_pt(PKB2, PKB3, PKB4, (digit_t*)pPrivateKeyA, ALICE, R, A, CurveIsogeny);
+    if (validate == true) {                           // Alice validating Bob's public key
+        Status = Validate_PKB(A, &PKB[0], &valid_PublicKey, CurveIsogeny);                   
+        if (Status != CRYPTO_SUCCESS) {  
+            return Status;
+        }  
+        if (valid_PublicKey != true) {
+            Status = CRYPTO_ERROR_PUBLIC_KEY_VALIDATION; 
+            return Status;
+        }
+    }
+
+    Status = ladder_3_pt(PKB[0], PKB[1], PKB[2], (digit_t*)pPrivateKeyA, ALICE, R, A, CurveIsogeny);
     if (Status != CRYPTO_SUCCESS) {
         return Status;
     }
@@ -296,33 +305,46 @@ CRYPTO_STATUS SecretAgreement_A(unsigned char* pPrivateKeyA, unsigned char* pPub
 }
 
 
-CRYPTO_STATUS SecretAgreement_B(unsigned char* pPrivateKeyB, unsigned char* pPublicKeyA, unsigned char* pSharedSecretB, PCurveIsogenyStruct CurveIsogeny)
+CRYPTO_STATUS SecretAgreement_B(unsigned char* pPrivateKeyB, unsigned char* pPublicKeyA, unsigned char* pSharedSecretB, bool validate, PCurveIsogenyStruct CurveIsogeny)
 { // Bob's shared secret generation
   // It produces a shared secret key pSharedSecretB using his secret key pPrivateKeyB and Alice's public key pPublicKeyA
   // Inputs: Bob's pPrivateKeyB is an integer in the range [1, oB-1], where oA = 3^239 (i.e., 379 bits in total). 
-  //         Alice's pPublicKeyA consists of 4 elements in GF(p751^2), i.e., 751 bytes in total.
+  //         Alice's pPublicKeyA consists of 3 elements in GF(p751^2), i.e., 564 bytes.
+  //         "validate" flag that indicates if Bob must validate Alice's public key. 
   // Output: a shared secret pSharedSecretB that consists of one element in GF(p751^2), i.e., 1502 bits in total. 
   // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
     unsigned int pwords = NBITS_TO_NWORDS(CurveIsogeny->pwordbits);
     unsigned int i, row, m, index = 0, pts_index[MAX_INT_POINTS_BOB], npts = 0; 
     point_proj_t R, pts[MAX_INT_POINTS_BOB];
     publickey_t* PublicKeyA = (publickey_t*)pPublicKeyA;
-    f2elm_t jinv, A, C = {0}, PKA2, PKA3, PKA4;
+    f2elm_t jinv, A, PKA[3], C = {0};
+    bool valid_PublicKey = false; 
     CRYPTO_STATUS Status = CRYPTO_ERROR_UNKNOWN;  
 
     if (pPrivateKeyB == NULL || pPublicKeyA == NULL || pSharedSecretB == NULL || is_CurveIsogenyStruct_null(CurveIsogeny)) {
         return CRYPTO_ERROR_INVALID_PARAMETER;
     }
-
-    to_fp2mont(((f2elm_t*)PublicKeyA)[0], A);         // Extracting and converting Alice's public curve parameters to Montgomery representation
-    to_fp2mont(((f2elm_t*)PublicKeyA)[1], PKA2);
-    to_fp2mont(((f2elm_t*)PublicKeyA)[2], PKA3);       
-    to_fp2mont(((f2elm_t*)PublicKeyA)[3], PKA4);
-
+       
+    to_fp2mont(((f2elm_t*)PublicKeyA)[0], PKA[0]);    // Extracting and converting Alice's public curve parameters to Montgomery representation
+    to_fp2mont(((f2elm_t*)PublicKeyA)[1], PKA[1]);       
+    to_fp2mont(((f2elm_t*)PublicKeyA)[2], PKA[2]);
+    
+    get_A(PKA[0], PKA[1], PKA[2], A, CurveIsogeny);
     fpcopy751(CurveIsogeny->C, C[0]);
     to_mont(C[0], C[0]);
 
-    Status = ladder_3_pt(PKA2, PKA3, PKA4, (digit_t*)pPrivateKeyB, BOB, R, A, CurveIsogeny);
+    if (validate == true) {                           // Bob validating Alice's public key
+        Status = Validate_PKA(A, &PKA[0], &valid_PublicKey, CurveIsogeny);                   
+        if (Status != CRYPTO_SUCCESS) {  
+            return Status;
+        }  
+        if (valid_PublicKey != true) {
+            Status = CRYPTO_ERROR_PUBLIC_KEY_VALIDATION; 
+            return Status;
+        }
+    }
+
+    Status = ladder_3_pt(PKA[0], PKA[1], PKA[2], (digit_t*)pPrivateKeyB, BOB, R, A, CurveIsogeny);
     if (Status != CRYPTO_SUCCESS) {
         return Status;
     }

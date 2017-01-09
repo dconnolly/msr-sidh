@@ -17,6 +17,8 @@ const uint64_t p751[NWORDS_FIELD]          = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFF
                                                0xE3EC968549F878A8, 0xDA959B1A13F7CC76, 0x084E9867D6EBE876, 0x8562B5045CB25748, 0x0E12909F97BADC66, 0x00006FE5D541F71C };
 const uint64_t p751p1[NWORDS_FIELD]        = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0xEEB0000000000000,
                                                0xE3EC968549F878A8, 0xDA959B1A13F7CC76, 0x084E9867D6EBE876, 0x8562B5045CB25748, 0x0E12909F97BADC66, 0x00006FE5D541F71C };
+const uint64_t p751x2[NWORDS_FIELD]        = { 0xFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xDD5FFFFFFFFFFFFF, 
+                                               0xC7D92D0A93F0F151, 0xB52B363427EF98ED, 0x109D30CFADD7D0ED, 0x0AC56A08B964AE90, 0x1C25213F2F75B8CD, 0x0000DFCBAA83EE38 };
 const uint64_t Montgomery_R2[NWORDS_FIELD] = { 0x233046449DAD4058, 0xDB010161A696452A, 0x5E36941472E3FD8E, 0xF40BFE2082A2E706, 0x4932CCA8904F8751 ,0x1F735F1F1EE7FC81, 
                                                0xA24F4D80C1048E18, 0xB56C383CCDB607C5, 0x441DD47B735F9C90, 0x5673ED2C6A6AC82A, 0x06C905261132294B, 0x000041AD830F1F35 }; 
 
@@ -58,13 +60,14 @@ void from_mont(felm_t ma, felm_t c)
     
     one[0] = 1;
     fpmul751_mont(ma, one, c);
+    fpcorrection751(c);
 }
 
 
 static __inline unsigned int is_felm_zero(felm_t x)
 { // Is x = 0? return 1 (TRUE) if condition is true, 0 (FALSE) otherwise
-   // NOTE: this function does not run in constant-time so it can only be used in functions
-   //       incorporating countermeasures such as projective randomization.
+  // NOTE: this function does not run in constant-time so it can only be used in functions
+  //       incorporating countermeasures such as projective randomization.
     unsigned int i;
 
     for (i = 0; i < NWORDS_FIELD; i++) {
@@ -153,21 +156,6 @@ void mp_shiftl1(digit_t* x, unsigned int nwords)
 }
 
 
-static __inline void power2_setup(felm_t x, int mark)
-{  // Set up the value 2^mark
-    unsigned int i = 0;
-    
-    fpzero751(x);
-    while (mark >= 0) {
-        if (mark < RADIX) {
-            x[i] = (digit_t)1 << mark;
-        }
-        mark -= RADIX;
-        i += 1;
-    }
-}
-
-
 void fpmul751_mont(felm_t ma, felm_t mb, felm_t mc)
 { // 751-bit Comba multi-precision multiplication, c = a*b mod p751
     dfelm_t temp = {0};
@@ -187,7 +175,7 @@ void fpsqr751_mont(felm_t ma, felm_t mc)
 
 
 void fpinv751_mont(felm_t a)
-{// Field inversion using Montgomery arithmetic, a = a^-1*R mod p751
+{ // Field inversion using Montgomery arithmetic, a = a^-1*R mod p751
     felm_t t[27], tt;
     unsigned int i, j;
     
@@ -328,51 +316,58 @@ void fpinv751_mont(felm_t a)
 /************* GF(p^2) FUNCTIONS ***************/
 
 void fp2copy751(f2elm_t a, f2elm_t c)
-{// Copy of a GF(p751^2) element, c = a
+{ // Copy of a GF(p751^2) element, c = a
     fpcopy751(a[0], c[0]);
     fpcopy751(a[1], c[1]);
 }
 
 
 void fp2zero751(f2elm_t a)
-{// Zeroing a GF(p751^2) element, a = 0
+{ // Zeroing a GF(p751^2) element, a = 0
     fpzero751(a[0]);
     fpzero751(a[1]);
 }
 
 
 void fp2neg751(f2elm_t a)
-{// GF(p751^2) negation, a = -a in GF(p751^2)
+{ // GF(p751^2) negation, a = -a in GF(p751^2)
     fpneg751(a[0]);
     fpneg751(a[1]);
 }
 
 
 __inline void fp2add751(f2elm_t a, f2elm_t b, f2elm_t c)           
-{// GF(p751^2) addition, c = a+b in GF(p751^2)
+{ // GF(p751^2) addition, c = a+b in GF(p751^2)
     fpadd751(a[0], b[0], c[0]);
     fpadd751(a[1], b[1], c[1]);
 }
 
 
 __inline void fp2sub751(f2elm_t a, f2elm_t b, f2elm_t c)          
-{// GF(p751^2) subtraction, c = a-b in GF(p751^2) 
+{ // GF(p751^2) subtraction, c = a-b in GF(p751^2) 
     fpsub751(a[0], b[0], c[0]);
     fpsub751(a[1], b[1], c[1]);
 }
 
 
 void fp2div2_751(f2elm_t a, f2elm_t c)          
-{// GF(p751^2) division by two, c = a/2  in GF(p751^2) 
+{ // GF(p751^2) division by two, c = a/2  in GF(p751^2) 
     fpdiv2_751(a[0], c[0]);
     fpdiv2_751(a[1], c[1]);
 }
 
 
-void fp2sqr751_mont(f2elm_t a, f2elm_t c)
-{// GF(p751^2) squaring using Montgomery arithmetic, c = a^2 in GF(p751^2)
-    felm_t t1, t2, t3;
+void fp2correction751(f2elm_t a)
+{ // Modular correction, a = a in GF(p751^2)
+    fpcorrection751(a[0]);
+    fpcorrection751(a[1]);
+}
 
+
+void fp2sqr751_mont(f2elm_t a, f2elm_t c)
+{ // GF(p751^2) squaring using Montgomery arithmetic, c = a^2 in GF(p751^2)
+    felm_t t1, t2, t3;
+    
     mp_add(a[0], a[1], t1, NWORDS_FIELD);    // t1 = a0+a1 
     fpsub751(a[0], a[1], t2);                // t2 = a0-a1
     mp_add(a[0], a[0], t3, NWORDS_FIELD);    // t3 = 2a0
@@ -382,12 +377,12 @@ void fp2sqr751_mont(f2elm_t a, f2elm_t c)
 
 
 void fp2mul751_mont(f2elm_t a, f2elm_t b, f2elm_t c)
-{// GF(p751^2) multiplication using Montgomery arithmetic, c = a*b in GF(p751^2)
+{ // GF(p751^2) multiplication using Montgomery arithmetic, c = a*b in GF(p751^2)
     felm_t t1, t2;
     dfelm_t tt1, tt2, tt3; 
     digit_t mask;
     unsigned int i, borrow;
-
+    
     mp_mul(a[0], b[0], tt1, NWORDS_FIELD);           // tt1 = a0*b0
     mp_mul(a[1], b[1], tt2, NWORDS_FIELD);           // tt2 = a1*b1
     mp_add(a[0], a[1], t1, NWORDS_FIELD);            // t1 = a0+a1
@@ -395,8 +390,8 @@ void fp2mul751_mont(f2elm_t a, f2elm_t b, f2elm_t c)
     borrow = mp_sub(tt1, tt2, tt3, 2*NWORDS_FIELD);  // tt3 = a0*b0 - a1*b1
     mask = 0 - (digit_t)borrow;                      // if tt3 < 0 then mask = 0xFF..F, else if tt3 >= 0 then mask = 0x00..0
     borrow = 0;
-    for (i = 0; i < NWORDS_FIELD; i++) {             // tt3 = tt3 + (mask & 2^768*p751)
-        ADDC(borrow, tt3[NWORDS_FIELD+i], ((digit_t*)p751)[i] & mask, borrow, tt3[NWORDS_FIELD+i]);
+    for (i = 0; i < NWORDS_FIELD; i++) {
+        ADDC(borrow, tt3[NWORDS_FIELD+i],  ((digit_t*)p751)[i]  & mask, borrow, tt3[NWORDS_FIELD+i]);
     }
     rdc_mont(tt3, c[0]);                             // c[0] = a0*b0 - a1*b1
     mp_add(tt1, tt2, tt1, 2*NWORDS_FIELD);           // tt1 = a0*b0 + a1*b1

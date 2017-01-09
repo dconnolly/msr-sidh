@@ -1,9 +1,9 @@
-                                        SIDH v1.0 (C Edition)
+                                        SIDH v1.1 (C Edition)
                                        =======================
 
-The SIDH v1.0 library (C Edition) is a supersingular isogeny-based cryptography library that implements 
-a post-quantum resistant Diffie-Hellman key exchange scheme. This scheme provides approximately 128 bits 
-of quantum security and 192 bits of classical security. 
+The SIDH v1.1 library (C Edition) is a supersingular isogeny-based cryptography library that implements a
+new suite of algorithms for a post-quantum Diffie-Hellman key exchange scheme [2]. This scheme provides 
+approximately 128 bits of quantum security and 192 bits of classical security. 
 
 The library was developed by Microsoft Research for experimentation purposes. 
 
@@ -42,7 +42,7 @@ README.txt                     - This readme file
 3. SUPPORTED PLATFORMS:
    -------------------
 
-SIDH v1.0 is supported on a wide range of platforms including x64, x86 and ARM devices running Windows 
+SIDH v1.1 is supported on a wide range of platforms including x64, x86 and ARM devices running Windows 
 or Linux OS. We have tested the library with Microsoft Visual Studio 2013 and 2015, GNU GCC v4.7, v4.8 
 and v4.9, and clang v3.6 and v3.8. See instructions below to choose an implementation option and compile 
 on one of the supported platforms.
@@ -112,15 +112,31 @@ BUILDING THE LIBRARY AND EXECUTING THE TESTS WITH GNU GCC OR CLANG:
 
 To compile on Linux using GNU GCC or clang, execute the following command from the command prompt:
 
-make ARCH=[x64/x86/ARM] CC=[gcc/clang] ASM=[TRUE/FALSE] GENERIC=[TRUE/FALSE]
+make ARCH=[x64/x86/ARM] CC=[gcc/clang] ASM=[TRUE/FALSE] GENERIC=[TRUE/FALSE] SET=[EXTENDED]
 
 After compilation, run kex_text.
 
-For example, to compile the key exchange tests using clang and the fully optimized x64 implementation 
-in assembly, execute:
+For example, to compile the key exchange tests using clang and the fully optimized x64 implementation in 
+assembly, execute:
 
-make CC=clang ARCH=x64 ASM=TRUE
+make CC=clang ARCH=x64 ASM=TRUE SET=EXTENDED
+
+When SET=EXTENDED, the following compilation flags are used: -fwrapv -fomit-frame-pointer -march=native. 
+Users are encouraged to experiment with different flag options.
 
 Whenever an unsupported configuration is applied, the following message will be displayed: #error -- 
 "Unsupported configuration". For example, the use of assembly is not supported when selecting the portable 
 implementation (i.e., if GENERIC=TRUE). Similarly, x86 and ARM are only supported when GENERIC=TRUE.
+
+
+REFERENCES:
+----------
+
+[1]   Craig Costello, Patrick Longa, and Michael Naehrig.
+      Efficient algorithms for supersingular isogeny Diffie-Hellman.      
+      Advances in Cryptology - CRYPTO 2016 (to appear), 2016. 
+      Extended version available at: http://eprint.iacr.org/2016/413. 
+
+[2]   David Jao and Luca DeFeo. 
+      Towards quantum-resistant cryptosystems from supersingular elliptic curve isogenies.
+      PQCrypto 2011, LNCS 7071, pp. 19-34, 2011. 

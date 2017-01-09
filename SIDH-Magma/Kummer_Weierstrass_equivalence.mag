@@ -78,39 +78,37 @@ XPB:=PB[1]; YPB:=PB[2];
 /*
    These are optimal strategies with respect to the cost ratios of 
    scalar multiplication by 4 and 4-isogeny evaluation of 
-                     pA/qA = 2*12.9/22.8,
+                     pA/qA = 2*12.1/21.6,
    and of point tripling and 3-isogeny evaluation of 
-                     pB/qB = 27.8/17.0. 
+                     pB/qB = 24.3/16.0. 
 
    See the file optimalstrategies.txt for how they are computed.
 */
 
 splits_Alice := [
- 0, 1, 1, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 6, 7, 8, 8, 8, 8, 8, 9, 10, 9, 12, 
-11, 11, 12, 12, 13, 14, 15, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 19, 19, 
-17, 18, 19, 20, 21, 22, 21, 23, 22, 24, 24, 25, 25, 27, 27, 27, 28, 30, 30, 
-31, 32, 32, 33, 33, 33, 33, 32, 33, 33, 33, 33, 33, 33, 33, 33, 36, 34, 35, 
-34, 35, 38, 37, 38, 38, 39, 38, 41, 39, 43, 38, 41, 42, 43, 43, 40, 41, 42, 
-43, 44, 45, 46, 47, 48, 49, 50, 48, 49, 53, 51, 51, 51, 53, 55, 56, 55, 56, 
-58, 58, 58, 59, 61, 61, 63, 63, 64, 64, 64, 65, 65, 65, 64, 64, 65, 65, 65, 
-66, 67, 65, 66, 65, 68, 66, 65, 66, 65, 66, 67, 65, 66, 67, 68, 69, 70, 71, 
-72, 71, 72, 71, 76, 71, 76, 72, 71, 76, 71, 73, 72, 76, 76, 73, 73, 72, 76, 
-76, 75, 76, 76, 75, 81, 81, 83, 81 ];
+0, 1, 1, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 9, 9, 9, 9, 9, 12, 11,
+12, 12, 13, 14, 15, 16, 16, 16, 16, 16, 16, 17, 17, 18, 18, 17, 21, 17, 18, 21,
+20, 21, 21, 21, 21, 21, 22, 25, 25, 25, 26, 27, 28, 28, 29, 30, 31, 32, 32, 32,
+32, 32, 32, 32, 33, 33, 33, 35, 36, 36, 33, 36, 35, 36, 36, 35, 36, 36, 37, 38,
+38, 39, 40, 41, 42, 38, 39, 40, 41, 42, 40, 46, 42, 43, 46, 46, 46, 46, 48, 48,
+48, 48, 49, 49, 48, 53, 54, 51, 52, 53, 54, 55, 56, 57, 58, 59, 59, 60, 62, 62,
+63, 64, 64, 64, 64, 64, 64, 64, 64, 65, 65, 65, 65, 65, 66, 67, 65, 66, 67, 66,
+69, 70, 66, 67, 66, 69, 70, 69, 70, 70, 71, 72, 71, 72, 72, 74, 74, 75, 72, 72,
+74, 74, 75, 72, 72, 74, 75, 75, 72, 72, 74, 75, 75, 77, 77, 79, 80, 80, 82 ];
 
 splits_Bob := [
- 0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 6, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9, 
-12, 12, 12, 12, 12, 12, 12, 13, 14, 14, 15, 16, 16, 16, 16, 17, 16, 19, 17, 
-19, 19, 19, 20, 21, 22, 22, 22, 22, 22, 22, 22, 24, 22, 22, 24, 24, 26, 27, 
-27, 28, 28, 28, 30, 28, 28, 28, 29, 28, 28, 28, 29, 29, 30, 33, 33, 33, 33, 
-34, 35, 37, 37, 37, 38, 38, 38, 37, 38, 38, 38, 38, 38, 39, 38, 44, 43, 44, 
-39, 40, 41, 43, 43, 43, 45, 46, 46, 46, 47, 48, 48, 49, 49, 50, 51, 51, 49, 
-49, 50, 51, 50, 51, 50, 50, 51, 50, 51, 51, 51, 53, 55, 55, 55, 56, 56, 56, 
-56, 56, 57, 58, 61, 61, 61, 63, 63, 63, 64, 65, 66, 65, 66, 66, 66, 65, 66, 
-66, 66, 66, 66, 68, 71, 66, 66, 68, 67, 71, 66, 66, 68, 67, 71, 66, 66, 68, 
-68, 71, 70, 70, 72, 72, 76, 75, 75, 78, 78, 78, 80, 80, 80, 80, 81, 81, 81, 
-82, 83, 84, 85, 86, 86, 86, 86, 86, 86, 88, 86, 90, 86, 92, 87, 86, 89, 86, 
-92, 87, 86, 87, 86, 91, 89, 89, 90, 90, 92, 92, 92, 93, 93, 93, 95, 95, 95, 
-95, 95, 95, 95, 95 ];
+0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 6, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9, 10,
+12, 12, 12, 12, 12, 12, 13, 14, 14, 15, 16, 16, 16, 16, 16, 17, 16, 16, 17, 19,
+19, 20, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 24, 24, 25, 27, 27, 28, 28,
+29, 28, 29, 28, 28, 28, 30, 28, 28, 28, 29, 30, 33, 33, 33, 33, 34, 35, 37, 37,
+37, 37, 38, 38, 37, 38, 38, 38, 38, 38, 39, 43, 38, 38, 38, 38, 43, 40, 41, 42,
+43, 48, 45, 46, 47, 47, 48, 49, 49, 49, 50, 51, 50, 49, 49, 49, 49, 51, 49, 53,
+50, 51, 50, 51, 51, 51, 52, 55, 55, 55, 56, 56, 56, 56, 56, 58, 58, 61, 61, 61,
+63, 63, 63, 64, 65, 65, 65, 65, 66, 66, 65, 65, 66, 66, 66, 66, 66, 66, 66, 71,
+66, 73, 66, 66, 71, 66, 73, 66, 66, 71, 66, 73, 68, 68, 71, 71, 73, 73, 73, 75,
+75, 78, 78, 78, 80, 80, 80, 81, 81, 82, 83, 84, 85, 86, 86, 86, 86, 86, 87, 86,
+88, 86, 86, 86, 86, 88, 86, 88, 86, 86, 86, 88, 88, 86, 86, 86, 93, 90, 90, 92,
+92, 92, 93, 93, 93, 93, 93, 97, 97, 97, 97, 97, 97 ];
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// Arithmetic functions /////////////////////////////////
@@ -539,7 +537,7 @@ xTPL:=function(X,Z,A,C)
     - the Montgomery curve constant A4:=4*A.
 
 	Output: 
-    - The projective Montgomery x-coordinates of x(2P)=X3/Z3. 
+    - The projective Montgomery x-coordinates of x(3P)=X3/Z3. 
 	*/
 
     X3:=X^2*(-C*X^4+6*C*X^2*Z^2+3*C*Z^4+Z^3*4*A*X)^2;
@@ -669,6 +667,28 @@ end function;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+get_A:=function(xP,xQ,xR)
+
+    /*
+    Given the x-coordinates of P, Q, and R, returns the value A 
+    (corresponding to the Montgomery curve E_A: y^2=x^3+A*x^2+x) 
+    such that R=Q-P on E_A
+
+    Input: 
+    - The x-coordinates xP, xQ, and xR of the points P, Q and R
+
+    Output: 
+    - The coefficient A corresponding to the curve E_A: y^2=x^3+A*x^2+x
+    */
+
+    A:=(xR*xP+xR*xQ+xP*xQ-1)^2/(4*xP*xQ*xR)-(xP+xQ+xR); 
+
+    return A;   
+    
+end function;
+
+////////////////////////////////////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////// Key exchange functions /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -750,46 +770,54 @@ keygen_Alice_fast:=function(SK_Alice,params,splits,MAX)
       computations.
 
     Output: 
-    - Alice's public key [A,phi_A(x(PB)),phi_A(x(QB)),phi_A(x(QB-PB))].
+    - Alice's public key [phi_A(x(PB)),phi_A(x(QB)),phi_A(x(QB-PB))].
     */
 
-
-    A:=0; C:=1; 
+    A:=0; C:=1; // the starting Montgomery curve (A:C) = (0:1)
     phiPX:=params[1]; phiPZ:=1; 
     phiQX:=-phiPX; phiQZ:=1;	// Q=(-xP,yP), tau(P) but yP instead of yP*i
     							// the "*i" is handled implicitly
     phiDX,phiDZ:=distort_and_diff(phiPX);	// (phiDX:phiDZ):=x(Q-P)
 
+    // computes x(R)=(RX:RZ) via secret_pt function
 	RX0,RX1,RZ:=secret_pt(params[2],params[3],SK_Alice,Alice);
 	RX:=RX0+RX1*i;
 
 	// the first iteration is different so not in the main loop
-	phiPX,phiPZ:=first_4_isog(phiPX,phiPZ,A); 
-	phiQX,phiQZ:=first_4_isog(phiQX,phiQZ,A); 
-	phiDX,phiDZ:=first_4_isog(phiDX,phiDZ,A); 
-	RX,RZ,A,C:=first_4_isog(RX,RZ,A); 
+	phiPX,phiPZ:=first_4_isog(phiPX,phiPZ,A);
+	phiQX,phiQZ:=first_4_isog(phiQX,phiQZ,A);
+	phiDX,phiDZ:=first_4_isog(phiDX,phiDZ,A);
+	RX,RZ,A,C:=first_4_isog(RX,RZ,A);
 
     pts:=[];
 	index:=0;
 
+    // Alice's main loop
 	for row:=1 to MAX-1 do
+
+        // multiply (RX:RZ) until it has order 4, and store intermediate points
         while index lt (MAX - row) do
             Append(~pts, [RX,RZ,index]);
             m := splits[MAX-index-row+1];
-	        RX,RZ:=xDBLe(RX,RZ,A,C,2*m); 
+	        RX,RZ:=xDBLe(RX,RZ,A,C,2*m);
             index +:= m;
         end while;
 
+        // compute the 4-isogeny based on kernel (RX:RZ)
 		A,C,consts:=get_4_isog(RX,RZ); 
 
+        // evaluate the 4-isogeny at every point in pts
 	    for i:=1 to #pts do 
 	    	pts[i][1],pts[i][2]:=eval_4_isog(consts,pts[i][1],pts[i][2]); 
 	    end for;
 
+        // evaluate the 4-isogeny at Bob's (intermediate) points 
+        // x(P), x(Q), x(Q-P)
 		phiPX,phiPZ:=eval_4_isog(consts,phiPX,phiPZ); 
-		phiQX,phiQZ:=eval_4_isog(consts,phiQX,phiQZ); 
-		phiDX,phiDZ:=eval_4_isog(consts,phiDX,phiDZ); 
+		phiQX,phiQZ:=eval_4_isog(consts,phiQX,phiQZ);
+		phiDX,phiDZ:=eval_4_isog(consts,phiDX,phiDZ);
 
+        // R becomes the last point in pts and then pts is pruned
 		RX:=pts[#pts][1]; 
 	    RZ:=pts[#pts][2]; 
 	    index:=Integers()!pts[#pts][3];	
@@ -798,19 +826,18 @@ keygen_Alice_fast:=function(SK_Alice,params,splits,MAX)
 
 	end for;
 
+    // compute and evaluate the last 4-isogeny
 	A,C,consts:=get_4_isog(RX,RZ); 
 	phiPX,phiPZ:=eval_4_isog(consts,phiPX,phiPZ);
-	phiQX,phiQZ:=eval_4_isog(consts,phiQX,phiQZ); 
-	phiDX,phiDZ:=eval_4_isog(consts,phiDX,phiDZ); 
+	phiQX,phiQZ:=eval_4_isog(consts,phiQX,phiQZ);
+	phiDX,phiDZ:=eval_4_isog(consts,phiDX,phiDZ);
 
-	C,phiPZ,phiQZ,phiDZ:=inv_4_way(C,phiPZ,phiQZ,phiDZ);
+    // normalize everything via a 3-way simultaneous inversion
+	phiPX:=phiPX/phiPZ;
+	phiQX:=phiQX/phiQZ;
+	phiDX:=phiDX/phiDZ;
 
-	A:=A*C; 
-	phiPX:=phiPX*phiPZ;
-	phiQX:=phiQX*phiQZ;
-	phiDX:=phiDX*phiDZ;
-
-	PK_Alice:=[A,phiPX,phiQX,phiDX]; //4 values in Fp2
+	PK_Alice:=[phiPX,phiQX,phiDX]; //3 values in Fp2
 
 	return PK_Alice;
 
@@ -893,22 +920,26 @@ keygen_Bob_fast:=function(SK_Bob,params,splits,MAX)
       computations.
 
     Output: 
-    - Bob's public key [A,phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))].
+    - Bob's public key [phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))].
     */
 
-    A:=0; C:=1; 
+    A:=0; C:=1;  // the starting Montgomery curve (A:C) = (0:1)
     phiPX:=params[1]; phiPZ:=1; 
     phiQX:=-phiPX; phiQZ:=1;	// Q=(-xP,yP), tau(P) but yP instead of yP*i
     							// the "*i" is handled implicitly
     phiDX,phiDZ:=distort_and_diff(phiPX);	// (phiDX:phiDZ):=x(Q-P)
 
+    // computes x(R)=(RX:RZ) via secret_pt function
     RX0,RX1,RZ:=secret_pt(params[2],params[3],SK_Bob,Bob);
     RX:=RX0+RX1*i;
 
 	pts:=[];
 	index:=0;
 	
+    // Bob's main loop
 	for row:=1 to MAX-1 do
+
+        // multiply (RX:RZ) until it has order 3, and store intermediate points
         while index lt (MAX - row) do
             Append(~pts, [RX,RZ,index]);
             m := splits[MAX-index-row+1];
@@ -916,16 +947,21 @@ keygen_Bob_fast:=function(SK_Bob,params,splits,MAX)
             index +:= m;
         end while;
 
+        // compute the 3-isogeny based on kernel (RX:RZ)
 		A,C:=get_3_isog(RX,RZ); 
 
+        // evaluate the 3-isogeny at every point in pts
 	    for i:=1 to #pts do 
 	    	pts[i][1],pts[i][2]:=eval_3_isog(RX,RZ,pts[i][1],pts[i][2]); 
 	    end for;
 
+        // evaluate the 3-isogeny at Alice's (intermediate) points 
+        // x(P), x(Q), x(Q-P)
 		phiPX,phiPZ:=eval_3_isog(RX,RZ,phiPX,phiPZ);
 		phiQX,phiQZ:=eval_3_isog(RX,RZ,phiQX,phiQZ);
-		phiDX,phiDZ:=eval_3_isog(RX,RZ,phiDX,phiDZ); 
+		phiDX,phiDZ:=eval_3_isog(RX,RZ,phiDX,phiDZ);
 
+        // R becomes the last point in pts and then pts is pruned
 		RX:=pts[#pts][1]; 
 	    RZ:=pts[#pts][2]; 
 	    index:=Integers()!pts[#pts][3];	
@@ -934,19 +970,18 @@ keygen_Bob_fast:=function(SK_Bob,params,splits,MAX)
 
 	end for;
 
+    // compute and evaluate the last 3-isogeny
 	A,C:=get_3_isog(RX,RZ); 
-	phiPX,phiPZ:=eval_3_isog(RX,RZ,phiPX,phiPZ); 
-	phiQX,phiQZ:=eval_3_isog(RX,RZ,phiQX,phiQZ); 
+	phiPX,phiPZ:=eval_3_isog(RX,RZ,phiPX,phiPZ);
+	phiQX,phiQZ:=eval_3_isog(RX,RZ,phiQX,phiQZ);
 	phiDX,phiDZ:=eval_3_isog(RX,RZ,phiDX,phiDZ);
 
-    C,phiPZ,phiQZ,phiDZ:=inv_4_way(C,phiPZ,phiQZ,phiDZ);
+    // normalize everything via a 3-way simultaneous inversion
+    phiPX:=phiPX/phiPZ;
+    phiQX:=phiQX/phiQZ;
+    phiDX:=phiDX/phiDZ;
 
-    A:=A*C; 
-    phiPX:=phiPX*phiPZ;
-    phiQX:=phiQX*phiQZ;
-    phiDX:=phiDX*phiDZ;
-
-    PK_Bob:=[A,phiPX,phiQX,phiDX]; //4 values in Fp2
+    PK_Bob:=[phiPX,phiQX,phiDX]; // 4 values in Fp2
 
     return PK_Bob;
 
@@ -1012,7 +1047,7 @@ shared_secret_Alice_fast:=function(SK_Alice,PK_Bob,params,splits,MAX)
     
     Input: 
     - Alice's secret key SK_Alice, a random even number between 1 and oA-1,
-    - Bob's public key PK_Bob=[A,phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))],
+    - Bob's public key PK_Bob=[phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))],
     - the parameter "splits", a vector that guides the optimal route through the 
       isogeny tree; it is generated individually for Alice using 
       "optimalstrategies.m" and the ratios of 4-isogeny evaluation versus 
@@ -1024,29 +1059,38 @@ shared_secret_Alice_fast:=function(SK_Alice,PK_Bob,params,splits,MAX)
     - Alice's shared secret: the j-invariant of E_AB.
     */
 
-    A:=PK_Bob[1]; C:=1;
-    RX,RZ:=LADDER_3_pt(SK_Alice,PK_Bob[2],PK_Bob[3],PK_Bob[4],A,Alice);   
+    A:=get_A(PK_Bob[1],PK_Bob[2],PK_Bob[3]); 
+    C:=1;  // starting on Bob's Montgomery curve
+
+    // computes R=phi_B(xPA)+SK_Alice*phi_B(xQA) via 3 point ladder
+    RX,RZ:=LADDER_3_pt(SK_Alice,PK_Bob[1],PK_Bob[2],PK_Bob[3],A,Alice);   
 
     // the first iteration is different so not in the main loop
-    RX,RZ,A,C:=first_4_isog(RX,RZ,A); 
+    RX,RZ,A,C:=first_4_isog(RX,RZ,A);
 
 	pts:=[];
 	index:=0;
 
+    // Alice's main loop
 	for row:=1 to MAX-1 do
+
+        // multiply (RX:RZ) until it has order 4, and store intermediate points
         while index lt (MAX - row) do
             Append(~pts, [RX,RZ,index]);
             m := splits[MAX-index-row+1];
-	        RX,RZ:=xDBLe(RX,RZ,A,C,2*m); 
+	        RX,RZ:=xDBLe(RX,RZ,A,C,2*m);
             index +:= m;
         end while;
 
+        // compute the 4-isogeny based on kernel (RX:RZ)
 		A,C,consts:=get_4_isog(RX,RZ); 
 
+        // evaluate the 4-isogeny at every point in pts
 	    for i:=1 to #pts do 
 	    	pts[i][1],pts[i][2]:=eval_4_isog(consts,pts[i][1],pts[i][2]); 
 	    end for;
 
+        // R becomes the last point in pts and then pts is pruned
 		RX:=pts[#pts][1]; 
 	    RZ:=pts[#pts][2]; 
 	    index:=Integers()!pts[#pts][3];	
@@ -1055,8 +1099,10 @@ shared_secret_Alice_fast:=function(SK_Alice,PK_Bob,params,splits,MAX)
 
 	end for;
 
+    // compute the last 4-isogeny
 	A,C,consts:=get_4_isog(RX,RZ); 
 
+    // compute the j Invariant of E_AB
     shared_secret_Alice:=j_inv(A,C);
 
     return shared_secret_Alice;
@@ -1123,7 +1169,7 @@ shared_secret_Bob_fast:=function(SK_Bob,PK_Alice,params,splits,MAX)
     
     Input: 
     - Bob's secret key SK_Bob, a random number between 1 and oB-1,
-    - Alice's public key PK_Alice=[A,phi_A(xPB),phi_A(xQB),phi_A(x(QB-PB))],
+    - Alice's public key PK_Alice=[phi_A(xPB),phi_A(xQB),phi_A(x(QB-PB))],
     - the parameter "splits", a vector that guides the optimal route through the 
       isogeny tree; it is generated individually for Bob using 
       "optimalstrategies.m" and the ratios of 3-isogeny evaluation versus 
@@ -1135,26 +1181,35 @@ shared_secret_Bob_fast:=function(SK_Bob,PK_Alice,params,splits,MAX)
     - Bob's shared secret: the j-invariant of E_BA.
     */
 
-    A:=PK_Alice[1]; C:=1;
-    RX,RZ:=LADDER_3_pt(SK_Bob,PK_Alice[2],PK_Alice[3],PK_Alice[4],A,Bob);   
+    A:=get_A(PK_Alice[1],PK_Alice[2],PK_Alice[3]); 
+    C:=1; // starting on Alice's Montgomery curve
+
+    // computes R=phi_A(xPB)+SK_Bob*phi_A(xQB) via 3 point ladder
+    RX,RZ:=LADDER_3_pt(SK_Bob,PK_Alice[1],PK_Alice[2],PK_Alice[3],A,Bob);   
 
 	pts:=[];
 	index:=0;
 	
+    // Bob's main loop
 	for row:=1 to MAX-1 do
+
+        // multiply (RX:RZ) until it has order 3, and store intermediate points
         while index lt (MAX - row) do
             Append(~pts, [RX,RZ,index]);
             m := splits[MAX-index-row+1];
-	        RX,RZ:=xTPLe(RX,RZ,A,C,m); 
+	        RX,RZ:=xTPLe(RX,RZ,A,C,m);
             index +:= m;
         end while;
 
+        // compute the 3-isogeny based on kernel (RX:RZ)
 		A,C:=get_3_isog(RX,RZ); 
 
+        // evaluate the 3-isogeny at every point in pts
 	    for i:=1 to #pts do 
-	    	pts[i][1],pts[i][2]:=eval_3_isog(RX,RZ,pts[i][1],pts[i][2]);
+	    	pts[i][1],pts[i][2]:=eval_3_isog(RX,RZ,pts[i][1],pts[i][2]); 
 	    end for;
 
+        // R becomes the last point in pts and then pts is pruned
 		RX:=pts[#pts][1]; 
 	    RZ:=pts[#pts][2]; 
 	    index:=Integers()!pts[#pts][3];	
@@ -1163,8 +1218,10 @@ shared_secret_Bob_fast:=function(SK_Bob,PK_Alice,params,splits,MAX)
 
 	end for;
 
+    // compute the last 3-isogeny
 	A,C:=get_3_isog(RX,RZ); 
 
+    // compute the j Invariant of E_BA
     shared_secret_Bob:=j_inv(A,C);
 
     return shared_secret_Bob;
@@ -1193,22 +1250,22 @@ SK_Bob:=Random(1, (oB div lB)-1)*lB; // Random multiple of lB between 1 and oB-1
 "====================================================================";
 
 "Generating Alice's public key... (Weierstrass algorithm).";
-"(This takes a couple of minutes because of Magma's IsogenyFromKernel 
-function)";
+"(This takes a couple of minutes because of Magma's IsogenyFromKernel
+function.)";
 PK_Alice:=keygen_Alice_Weierstrass(SK_Alice,params_both_Weierstrass);
 "Generating Alice's public key... (fast algorithm).";
 PK_Alice_fast:=keygen_Alice_fast(SK_Alice,params_Alice,splits_Alice,MAX_Alice);
 "Done with Alice's public key.\n";
 
-"Test result from Alice's Weierstrass key gen equal to result from Alice's fast 
-key gen?";
+"Test result from Alice's Weierstrass key gen equal to result from 
+Alice's fast key gen?";
 
 //Weierstrass curve generated by Magma in Alice's public key
 a:=PK_Alice[1]; b:=PK_Alice[2];
 E:=EllipticCurve([Fp2|a,b]);
 
 //Montgomery curve generated by our code in Alice's public key
-A:=PK_Alice_fast[1];
+A:=get_A(PK_Alice_fast[1],PK_Alice_fast[2],PK_Alice_fast[3]);
 _<x>:=PolynomialRing(Fp2);
 EA:=EllipticCurve(x^3+A*x^2+x);
 
@@ -1218,21 +1275,21 @@ jInvariant(EA) eq jInvariant(E);
 
 "Generating Bob's public key... (Weierstrass algorithm).";
 "(This takes a couple of minutes because of Magma's IsogenyFromKernel 
-function)";
+function.)";
 PK_Bob:=keygen_Bob_Weierstrass(SK_Bob,params_both_Weierstrass);
 "Generating Bob's public key... (fast algorithm).";
 PK_Bob_fast:=keygen_Bob_fast(SK_Bob,params_Bob,splits_Bob,MAX_Bob);
 "Done with Bob's public key.\n";
 
-"Test result from Bob's Weierstrass key gen equal to result from Bob's fast 
-key gen?";
+"Test result from Bob's Weierstrass key gen equal to result from 
+Bob's fast key gen?";
 
 //Weierstrass curve generated by Magma in Alice's public key
 a:=PK_Bob[1]; b:=PK_Bob[2];
 E:=EllipticCurve([Fp2|a,b]);
 
 //Montgomery curve generated by our code in Alice's public key
-A:=PK_Bob_fast[1];
+A:=get_A(PK_Bob_fast[1],PK_Bob_fast[2],PK_Bob_fast[3]);
 _<x>:=PolynomialRing(Fp2);
 EB:=EllipticCurve(x^3+A*x^2+x);
 
@@ -1242,7 +1299,7 @@ jInvariant(EB) eq jInvariant(E);
 
 "Generating shared secret for Alice... (Weierstrass algorithm).";
 "(This takes a couple of minutes because of Magma's IsogenyFromKernel 
-function)";
+function).";
 secret_Alice:=shared_secret_Alice_Weierstrass(SK_Alice,PK_Bob);
 "Generating shared secret for Alice... (fast algorithm).";
 secret_Alice_fast:=shared_secret_Alice_fast(SK_Alice,PK_Bob_fast,params_Alice,
@@ -1255,7 +1312,7 @@ secret_Alice eq secret_Alice_fast;
 
 "Generating shared secret for Bob... (Weierstrass algorithm).";
 "(This takes a couple of minutes because of Magma's IsogenyFromKernel 
-function)";
+function).";
 secret_Bob:=shared_secret_Bob_Weierstrass(SK_Bob,PK_Alice);
 "Generating shared secret for Bob... (fast algorithm).";
 secret_Bob_fast:=shared_secret_Bob_fast(SK_Bob,PK_Alice_fast,params_Bob,

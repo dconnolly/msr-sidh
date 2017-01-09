@@ -15,12 +15,13 @@
 // Global constants
 extern const uint64_t p751[NWORDS_FIELD];
 extern const uint64_t p751p1[NWORDS_FIELD]; 
+extern const uint64_t p751x2[NWORDS_FIELD]; 
 
 
 __inline void fpadd751(digit_t* a, digit_t* b, digit_t* c)
 { // Modular addition, c = a+b mod p751.
-  // Inputs: a, b in [0, p751-1] 
-  // Output: c in [0, p751-1] 
+  // Inputs: a, b in [0, 2*p751-1] 
+  // Output: c in [0, 2*p751-1] 
     
 #if (OS_TARGET == OS_WIN)
     unsigned int i, carry = 0;
@@ -32,13 +33,13 @@ __inline void fpadd751(digit_t* a, digit_t* b, digit_t* c)
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        SUBC(carry, c[i], ((digit_t*)p751)[i], carry, c[i]); 
+        SUBC(carry, c[i], ((digit_t*)p751x2)[i], carry, c[i]); 
     }
     mask = 0 - (digit_t)carry;
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(carry, c[i], ((digit_t*)p751)[i] & mask, carry, c[i]); 
+        ADDC(carry, c[i], ((digit_t*)p751x2)[i] & mask, carry, c[i]); 
     } 
     
 #elif (OS_TARGET == OS_LINUX)                 
@@ -51,8 +52,8 @@ __inline void fpadd751(digit_t* a, digit_t* b, digit_t* c)
 
 __inline void fpsub751(digit_t* a, digit_t* b, digit_t* c)
 { // Modular subtraction, c = a-b mod p751.
-  // Inputs: a, b in [0, p751-1] 
-  // Output: c in [0, p751-1] 
+  // Inputs: a, b in [0, 2*p751-1] 
+  // Output: c in [0, 2*p751-1] 
     
 #if (OS_TARGET == OS_WIN)
     unsigned int i, borrow = 0;
@@ -65,7 +66,7 @@ __inline void fpsub751(digit_t* a, digit_t* b, digit_t* c)
 
     borrow = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(borrow, c[i], ((digit_t*)p751)[i] & mask, borrow, c[i]); 
+        ADDC(borrow, c[i], ((digit_t*)p751x2)[i] & mask, borrow, c[i]); 
     }
     
 #elif (OS_TARGET == OS_LINUX)                 
@@ -78,19 +79,19 @@ __inline void fpsub751(digit_t* a, digit_t* b, digit_t* c)
 
 __inline void fpneg751(digit_t* a)
 { // Modular negation, a = -a mod p751.
-  // Input/output: a in [0, p751-1] 
+  // Input/output: a in [0, 2*p751-1] 
     unsigned int i, borrow = 0;
-
+    
     for (i = 0; i < NWORDS_FIELD; i++) {
-        SUBC(borrow, ((digit_t*)p751)[i], a[i], borrow, a[i]); 
+        SUBC(borrow, ((digit_t*)p751x2)[i], a[i], borrow, a[i]); 
     }
 }
 
 
 void fpdiv2_751(digit_t* a, digit_t* c)
 { // Modular division by two, c = a/2 mod p751.
-  // Input : a in [0, p751-1] 
-  // Output: c in [0, p751-1] 
+  // Input : a in [0, 2*p751-1] 
+  // Output: c in [0, 2*p751-1] 
     unsigned int i, carry = 0;
     digit_t mask;
         
@@ -100,11 +101,28 @@ void fpdiv2_751(digit_t* a, digit_t* c)
     }
 
     mp_shiftr1(c, NWORDS_FIELD);
-} 
+}  
 
 
-void mp_mul_comba(digit_t* a, digit_t* b, digit_t* c, unsigned int nwords)
-{ // Multiprecision comba multiply, c = a*b, where lng(a) = lng(b) = nwords.
+void fpcorrection751(digit_t* a)
+{ // Modular correction to reduce field element a in [0, 2*p751-1] to [0, p751-1].
+    unsigned int i, borrow = 0;
+    digit_t mask;
+
+    for (i = 0; i < NWORDS_FIELD; i++) {
+        SUBC(borrow, a[i], ((digit_t*)p751)[i], borrow, a[i]); 
+    }
+    mask = 0 - (digit_t)borrow;
+
+    borrow = 0;
+    for (i = 0; i < NWORDS_FIELD; i++) {
+        ADDC(borrow, a[i], ((digit_t*)p751)[i] & mask, borrow, a[i]); 
+    }
+}
+
+
+void mp_mul(digit_t* a, digit_t* b, digit_t* c, unsigned int nwords)
+{ // Multiprecision multiply, c = a*b, where lng(a) = lng(b) = nwords.
         
     UNREFERENCED_PARAMETER(nwords);
 
@@ -522,12 +540,12 @@ void mp_mul_comba(digit_t* a, digit_t* b, digit_t* c, unsigned int nwords)
 
 void rdc_mont(dfelm_t ma, felm_t mc)
 { // Optimized Montgomery reduction using comba and exploiting the special form of the prime p751.
-  // mc = ma*mb*R^-1 mod p751, where ma,mb,mc in [0, p751-1] and R = 2^768.
+  // mc = ma*mb*R^-1 mod p751, where ma,mb,mc in [0, 2*p751-1] and R = 2^768.
   // ma and mb are assumed to be in Montgomery representation.
         
 #if (OS_TARGET == OS_WIN)
-    unsigned int i, carry;
-    digit_t mask, t = 0;
+    unsigned int carry;
+    digit_t t = 0;
     uint128_t uv = {0};
     
     mc[0] = ma[0];
@@ -838,15 +856,6 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     ADDC(0, uv[0], ma[22], carry, mc[10]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
     ADDC(0, uv[1], ma[23], carry, mc[11]); 
-
-    // Final, constant-time subtraction     
-    carry = mp_sub(mc, (digit_t*)&p751, mc, NWORDS_FIELD);    // (carry, mc) = z - p751
-    mask = 0 - (digit_t)carry;                                // if mc < 0 then mask = 0xFF..F, else if mc >= 0 then mask = 0x00..0
-
-    carry = 0;
-    for (i = 0; i < NWORDS_FIELD; i++) {                      // mc = mc + (mask & p751)
-        ADDC(carry, mc[i], ((digit_t*)p751)[i] & mask, carry, mc[i]);
-    }
     
 #elif (OS_TARGET == OS_LINUX)                 
     

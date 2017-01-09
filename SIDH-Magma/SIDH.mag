@@ -102,39 +102,37 @@ assert XPB eq PB[1] and YPB eq PB[2];
 /*
    These are optimal strategies with respect to the cost ratios of 
    scalar multiplication by 4 and 4-isogeny evaluation of 
-                     pA/qA = 2*12.9/22.8,
+                     pA/qA = 2*12.1/21.6,
    and of point tripling and 3-isogeny evaluation of 
-                     pB/qB = 27.8/17.0. 
+                     pB/qB = 24.3/16.0. 
 
    See the file optimalstrategies.txt for how they are computed.
 */
 
 splits_Alice := [
- 0, 1, 1, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 6, 7, 8, 8, 8, 8, 8, 9, 10, 9, 12, 
-11, 11, 12, 12, 13, 14, 15, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 19, 19, 
-17, 18, 19, 20, 21, 22, 21, 23, 22, 24, 24, 25, 25, 27, 27, 27, 28, 30, 30, 
-31, 32, 32, 33, 33, 33, 33, 32, 33, 33, 33, 33, 33, 33, 33, 33, 36, 34, 35, 
-34, 35, 38, 37, 38, 38, 39, 38, 41, 39, 43, 38, 41, 42, 43, 43, 40, 41, 42, 
-43, 44, 45, 46, 47, 48, 49, 50, 48, 49, 53, 51, 51, 51, 53, 55, 56, 55, 56, 
-58, 58, 58, 59, 61, 61, 63, 63, 64, 64, 64, 65, 65, 65, 64, 64, 65, 65, 65, 
-66, 67, 65, 66, 65, 68, 66, 65, 66, 65, 66, 67, 65, 66, 67, 68, 69, 70, 71, 
-72, 71, 72, 71, 76, 71, 76, 72, 71, 76, 71, 73, 72, 76, 76, 73, 73, 72, 76, 
-76, 75, 76, 76, 75, 81, 81, 83, 81 ];
+0, 1, 1, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 9, 9, 9, 9, 9, 12, 11,
+12, 12, 13, 14, 15, 16, 16, 16, 16, 16, 16, 17, 17, 18, 18, 17, 21, 17, 18, 21,
+20, 21, 21, 21, 21, 21, 22, 25, 25, 25, 26, 27, 28, 28, 29, 30, 31, 32, 32, 32,
+32, 32, 32, 32, 33, 33, 33, 35, 36, 36, 33, 36, 35, 36, 36, 35, 36, 36, 37, 38,
+38, 39, 40, 41, 42, 38, 39, 40, 41, 42, 40, 46, 42, 43, 46, 46, 46, 46, 48, 48,
+48, 48, 49, 49, 48, 53, 54, 51, 52, 53, 54, 55, 56, 57, 58, 59, 59, 60, 62, 62,
+63, 64, 64, 64, 64, 64, 64, 64, 64, 65, 65, 65, 65, 65, 66, 67, 65, 66, 67, 66,
+69, 70, 66, 67, 66, 69, 70, 69, 70, 70, 71, 72, 71, 72, 72, 74, 74, 75, 72, 72,
+74, 74, 75, 72, 72, 74, 75, 75, 72, 72, 74, 75, 75, 77, 77, 79, 80, 80, 82 ];
 
 splits_Bob := [
- 0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 6, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9, 
-12, 12, 12, 12, 12, 12, 12, 13, 14, 14, 15, 16, 16, 16, 16, 17, 16, 19, 17, 
-19, 19, 19, 20, 21, 22, 22, 22, 22, 22, 22, 22, 24, 22, 22, 24, 24, 26, 27, 
-27, 28, 28, 28, 30, 28, 28, 28, 29, 28, 28, 28, 29, 29, 30, 33, 33, 33, 33, 
-34, 35, 37, 37, 37, 38, 38, 38, 37, 38, 38, 38, 38, 38, 39, 38, 44, 43, 44, 
-39, 40, 41, 43, 43, 43, 45, 46, 46, 46, 47, 48, 48, 49, 49, 50, 51, 51, 49, 
-49, 50, 51, 50, 51, 50, 50, 51, 50, 51, 51, 51, 53, 55, 55, 55, 56, 56, 56, 
-56, 56, 57, 58, 61, 61, 61, 63, 63, 63, 64, 65, 66, 65, 66, 66, 66, 65, 66, 
-66, 66, 66, 66, 68, 71, 66, 66, 68, 67, 71, 66, 66, 68, 67, 71, 66, 66, 68, 
-68, 71, 70, 70, 72, 72, 76, 75, 75, 78, 78, 78, 80, 80, 80, 80, 81, 81, 81, 
-82, 83, 84, 85, 86, 86, 86, 86, 86, 86, 88, 86, 90, 86, 92, 87, 86, 89, 86, 
-92, 87, 86, 87, 86, 91, 89, 89, 90, 90, 92, 92, 92, 93, 93, 93, 95, 95, 95, 
-95, 95, 95, 95, 95 ];
+0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 6, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9, 10,
+12, 12, 12, 12, 12, 12, 13, 14, 14, 15, 16, 16, 16, 16, 16, 17, 16, 16, 17, 19,
+19, 20, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 24, 24, 25, 27, 27, 28, 28,
+29, 28, 29, 28, 28, 28, 30, 28, 28, 28, 29, 30, 33, 33, 33, 33, 34, 35, 37, 37,
+37, 37, 38, 38, 37, 38, 38, 38, 38, 38, 39, 43, 38, 38, 38, 38, 43, 40, 41, 42,
+43, 48, 45, 46, 47, 47, 48, 49, 49, 49, 50, 51, 50, 49, 49, 49, 49, 51, 49, 53,
+50, 51, 50, 51, 51, 51, 52, 55, 55, 55, 56, 56, 56, 56, 56, 58, 58, 61, 61, 61,
+63, 63, 63, 64, 65, 65, 65, 65, 66, 66, 65, 65, 66, 66, 66, 66, 66, 66, 66, 71,
+66, 73, 66, 66, 71, 66, 73, 66, 66, 71, 66, 73, 68, 68, 71, 71, 73, 73, 73, 75,
+75, 78, 78, 78, 80, 80, 80, 81, 81, 82, 83, 84, 85, 86, 86, 86, 86, 86, 87, 86,
+88, 86, 86, 86, 86, 88, 86, 88, 86, 86, 86, 88, 88, 86, 86, 86, 93, 90, 90, 92,
+92, 92, 93, 93, 93, 93, 93, 97, 97, 97, 97, 97, 97 ];
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// Arithmetic functions /////////////////////////////////
@@ -664,7 +662,7 @@ end function;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-xTPL:=function(X,Z,A,C)
+xTPL:=function(X,Z,A24,C24)
 
 	/*
 	This is NOT the stereotypical Montgomery x-only tripling, since it assumes 
@@ -672,42 +670,35 @@ xTPL:=function(X,Z,A,C)
 
 	Input: 
     - The projective Montgomery x-coordinates of xP=X/Z and 
-    - the Montgomery curve constant A4:=4*A.
+    - the Montgomery curve constant A/C
 
 	Output: 
-    - The projective Montgomery x-coordinates of x(2P)=X3/Z3. 
+    - The projective Montgomery x-coordinates of x(3P)=X3/Z3. 
 	*/
 
-        t2 := X+Z;
-        t0 := X^2;
-        t1 := Z^2;
-        t2 := t2^2;
-        t3 := C*t0;
-        t2 := t2-t0;
-        t4 := C*t1;
-        t2 := t2-t1;
-        t5 := t3+t4;
-        t2 := A*t2;
-        t3 := t3+t3; 
-        t4 := t4+t4;
-        t3 := t2+t3;
-        t4 := t2+t4;
-        t3 := t3+t5;
-        t4 := t4+t5;
-        t2 := t0-t1;
-        t0 := t0+t0;
-        t1 := t1+t1;
-        t2 := t2*t5;
-        t1 := t1*t3;
-        t0 := t0*t4;
-        t1 := t1-t2;
-        t0 := t0+t2;
-        t1 := t1^2;
-        t0 := t0^2;
-        X3 := X*t1;
-        Z3 := Z*t0;
+    t2:=X-Z;           
+    t3:=X+Z; 
+    t0:=t2^2; 
+    t1:=t3^2; 
+    t4:=C24*t0; 
+    t5:=t4*t1;
+    t1:=t1-t0; 
+    t0:=A24*t1;
+    t4:=t4+t0;
+    t4:=t4*t1;
+    t0:=t5+t4;
+    t1:=t5-t4;
+    t0:=t2*t0;
+    t1:=t3*t1;
+    t4:=t0-t1;
+    t5:=t0+t1;
+    t4:=t4^2;
+    t5:=t5^2;;
+    t4:=X*t4;
+    X3:=Z*t5;
+    Z3:=t4;
 
-        return X3,Z3;     // Total: 8M+5S+15a  
+    return X3,Z3;     // Total: 8M+4S+8a  
 	
 end function;
 
@@ -729,8 +720,11 @@ xTPLe:=function(X,Z,A,C,e)
 	
 	XeP:=X; ZeP:=Z;
 
+    A24:=A+2*C;
+    C24:=4*C;
+
 	for i:=1 to e do
-		XeP,ZeP:=xTPL(XeP,ZeP,A,C);
+		XeP,ZeP:=xTPL(XeP,ZeP,A24,C24);
 	end for;
 
 	return XeP,ZeP;
@@ -808,33 +802,29 @@ end function;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-inv_4_way:=function(z1,z2,z3,z4)
+inv_3_way:=function(z1,z2,z3)
 
 	/*
-    This function computes inverses of four elements by sharing the inversions
+    This function computes inverses of three elements by sharing the inversions
     via Montgomery's simultaneous inversion trick.
 
 	Input: 
-    - The four values to be inverted: z1,z2,z3,z4.
+    - The three values to be inverted: z1,z2,z3,z4.
 	
     Output: 
-    - Their inverses 1/z1,1/z2,1/z3,1/z4 (over-ride variables).
+    - Their inverses 1/z1,1/z2,1/z3 (over-ride variables).
 	*/
 
-	t0:=z1*z2;
-	t1:=z3*z4;
-	t2:=t0*t1;
-	t2:=1/t2;
-	t0:=t0*t2; 
-	t1:=t1*t2; 
-	t2:=z3*t0;
-	z3:=z4*t0;
-	z4:=t2;
-	t2:=z1*t1;
-	z1:=z2*t1;
-	z2:=t2;
+    t0:=z1*z2;
+    t1:=t0*z3;
+    t1:=1/t1;
+    t2:=z3*t1;
+    t3:=t2*z2;
+    z2:=t2*z1;
+    z3:=t0*t1;
+    z1:=t3;     //unnecessary, obviously
 
-	return z1,z2,z3,z4;				//Total: 9M+1I  
+	return z1,z2,z3;				//Total: 6M+1I  
 	
 end function;
 
@@ -865,6 +855,40 @@ end function;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+get_A:=function(xP,xQ,xR)
+
+    /*
+    Given the x-coordinates of P, Q, and R, returns the value A 
+    (corresponding to the Montgomery curve E_A: y^2=x^3+A*x^2+x) 
+    such that R=Q-P on E_A
+
+    Input: 
+    - The x-coordinates xP, xQ, and xR of the points P, Q and R
+
+    Output: 
+    - The coefficient A corresponding to the curve E_A: y^2=x^3+A*x^2+x
+    */
+
+    t1:=xP+xQ;
+    t0:=xP*xQ;
+    A:=xR*t1;
+    A:=A+t0;
+    t0:=t0*xR;
+    A:=A-1;
+    t0:=t0+t0;
+    t1:=t1+xR;
+    t0:=t0+t0;
+    A:=A^2;
+    t0:=1/t0;
+    A:=A*t0;
+    A:=A-t1;              //Total: 4M+1S+7a+1I  
+
+    return A;   
+    
+end function;
+
+////////////////////////////////////////////////////////////////////////////////
+load "Validate.mag";
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////// Key exchange functions /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -888,7 +912,7 @@ keygen_Alice_simple:=function(SK_Alice,params)
       and both coordinates of PA.
 
     Output: 
-    - Alice's public key [A,phi_A(x(PB)),phi_A(x(QB)),phi_A(x(QB-PB))].
+    - Alice's public key [phi_A(x(PB)),phi_A(x(QB)),phi_A(x(QB-PB))].
     */
 
 
@@ -922,14 +946,13 @@ keygen_Alice_simple:=function(SK_Alice,params)
 
     end for;
 
-    // normalize everything via a 4-way simultaneous inversion
-    C,phiPZ,phiQZ,phiDZ:=inv_4_way(C,phiPZ,phiQZ,phiDZ); 
-    A:=A*C; 
+    // normalize everything via a 3-way simultaneous inversion
+    phiPZ,phiQZ,phiDZ:=inv_3_way(phiPZ,phiQZ,phiDZ); 
     phiPX:=phiPX*phiPZ;
     phiQX:=phiQX*phiQZ;
     phiDX:=phiDX*phiDZ;
 
-    PK_Alice:=[A,phiPX,phiQX,phiDX]; // 4 values in Fp2
+    PK_Alice:=[phiPX,phiQX,phiDX]; // 3 values in Fp2
 
     "Alice simple keygen requires: ", mulm, "muls-by-4 and ", isos, 
     "4-isogenies";
@@ -962,7 +985,7 @@ keygen_Alice_fast:=function(SK_Alice,params,splits,MAX)
       computations.
 
     Output: 
-    - Alice's public key [A,phi_A(x(PB)),phi_A(x(QB)),phi_A(x(QB-PB))].
+    - Alice's public key [phi_A(x(PB)),phi_A(x(QB)),phi_A(x(QB-PB))].
     */
 
     A:=0; C:=1; // the starting Montgomery curve (A:C) = (0:1)
@@ -1027,14 +1050,13 @@ keygen_Alice_fast:=function(SK_Alice,params,splits,MAX)
 	phiQX,phiQZ:=eval_4_isog(consts,phiQX,phiQZ); isos+:=1;
 	phiDX,phiDZ:=eval_4_isog(consts,phiDX,phiDZ); isos+:=1;
 
-    // normalize everything via a 4-way simultaneous inversion
-	C,phiPZ,phiQZ,phiDZ:=inv_4_way(C,phiPZ,phiQZ,phiDZ);
-	A:=A*C; 
+    // normalize everything via a 3-way simultaneous inversion
+	phiPZ,phiQZ,phiDZ:=inv_3_way(phiPZ,phiQZ,phiDZ);
 	phiPX:=phiPX*phiPZ;
 	phiQX:=phiQX*phiQZ;
 	phiDX:=phiDX*phiDZ;
 
-	PK_Alice:=[A,phiPX,phiQX,phiDX]; //4 values in Fp2
+	PK_Alice:=[phiPX,phiQX,phiDX]; //3 values in Fp2
 
     "Alice FAST keygen requires: ", mulm, "muls-by-4 and ", isos, 
     "4-isogenies";
@@ -1062,7 +1084,7 @@ keygen_Bob_simple:=function(SK_Bob,params)
       both coordinates of PB.
 
     Output: 
-    - Bob's public key [A,phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))].
+    - Bob's public key [phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))].
     */
 
     A:=0; C:=1; // the starting Montgomery curve (A:C) = (0:1)
@@ -1090,13 +1112,12 @@ keygen_Bob_simple:=function(SK_Bob,params)
     end for;
 
     // normalize everything via a 3-way simultaneous inversion
-    C,phiPZ,phiQZ,phiDZ:=inv_4_way(C,phiPZ,phiQZ,phiDZ);
-    A:=A*C; 
+    phiPZ,phiQZ,phiDZ:=inv_3_way(phiPZ,phiQZ,phiDZ);
     phiPX:=phiPX*phiPZ;
     phiQX:=phiQX*phiQZ;
     phiDX:=phiDX*phiDZ;
 
-    PK_Bob:=[A,phiPX,phiQX,phiDX]; //4 values in Fp2
+    PK_Bob:=[phiPX,phiQX,phiDX]; //3 values in Fp2
 
     "Bob simple keygen requires: ", mulm, "muls-by-3 and ", isos, 
     "3-isogenies";
@@ -1128,7 +1149,7 @@ keygen_Bob_fast:=function(SK_Bob,params,splits,MAX)
       computations.
 
     Output: 
-    - Bob's public key [A,phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))].
+    - Bob's public key [phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))].
     */
 
     A:=0; C:=1;  // the starting Montgomery curve (A:C) = (0:1)
@@ -1187,14 +1208,13 @@ keygen_Bob_fast:=function(SK_Bob,params,splits,MAX)
 	phiQX,phiQZ:=eval_3_isog(RX,RZ,phiQX,phiQZ); isos+:=1;
 	phiDX,phiDZ:=eval_3_isog(RX,RZ,phiDX,phiDZ); isos+:=1;
 
-    // normalize everything via a 4-way simultaneous inversion
-    C,phiPZ,phiQZ,phiDZ:=inv_4_way(C,phiPZ,phiQZ,phiDZ);
-    A:=A*C; 
+    // normalize everything via a 3-way simultaneous inversion
+    phiPZ,phiQZ,phiDZ:=inv_3_way(phiPZ,phiQZ,phiDZ);
     phiPX:=phiPX*phiPZ;
     phiQX:=phiQX*phiQZ;
     phiDX:=phiDX*phiDZ;
 
-    PK_Bob:=[A,phiPX,phiQX,phiDX]; // 4 values in Fp2
+    PK_Bob:=[phiPX,phiQX,phiDX]; // 4 values in Fp2
 
     "Bob FAST keygen requires: ", mulm, "muls-by-3 and ", isos, 
     "3-isogenies";
@@ -1208,7 +1228,7 @@ end function;
 ///////////////////////// SIMPLE BUT SLOW VERSION //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-shared_secret_Alice_simple:=function(SK_Alice,PK_Bob)
+shared_secret_Alice_simple:=function(SK_Alice,PK_Bob,validate)
 
     /*
     This function generates Alice's shared secret from her secret key and Bob's
@@ -1217,15 +1237,22 @@ shared_secret_Alice_simple:=function(SK_Alice,PK_Bob)
     
     Input: 
     - Alice's secret key SK_Alice, a random even number between 1 and oA-1,
-    - Bob's public key PK_Bob=[A,phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))].
+    - Bob's public key PK_Bob=[phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))].
 
     Output: 
     - Alice's shared secret: the j-invariant of E_AB.
     */
 
-    A:=PK_Bob[1]; C:=1; // starting on Bob's Montgomery curve
+    A:=get_A(PK_Bob[1],PK_Bob[2],PK_Bob[3]); 
+    C:=1; // starting on Bob's Montgomery curve
+
+    if validate then
+        "Bob's PK valid?";
+        validate_PKB(A,PK_Bob[1],PK_Bob[2],PK_Bob[3],eA);
+    end if;
+
     // computes R=phi_B(xPA)+SK_Alice*phi_B(xQA) via 3 point ladder
-    RX,RZ:=LADDER_3_pt(SK_Alice,PK_Bob[2],PK_Bob[3],PK_Bob[4],A,Alice);   
+    RX,RZ:=LADDER_3_pt(SK_Alice,PK_Bob[1],PK_Bob[2],PK_Bob[3],A,Alice);   
 
 	isos:=0; mulm:=0;
 
@@ -1255,7 +1282,7 @@ end function;
 ///////////////////////////////  FAST  /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-shared_secret_Alice_fast:=function(SK_Alice,PK_Bob,params,splits,MAX)
+shared_secret_Alice_fast:=function(SK_Alice,PK_Bob,params,splits,MAX,validate)
 
     /*
     This function generates Alice's shared secret from her secret key and Bob's
@@ -1264,7 +1291,7 @@ shared_secret_Alice_fast:=function(SK_Alice,PK_Bob,params,splits,MAX)
     
     Input: 
     - Alice's secret key SK_Alice, a random even number between 1 and oA-1,
-    - Bob's public key PK_Bob=[A,phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))],
+    - Bob's public key PK_Bob=[phi_B(x(PA)),phi_B(x(QA)),phi_B(x(QA-PA))],
     - the parameter "splits", a vector that guides the optimal route through the 
       isogeny tree; it is generated individually for Alice using 
       "optimalstrategies.m" and the ratios of 4-isogeny evaluation versus 
@@ -1276,9 +1303,16 @@ shared_secret_Alice_fast:=function(SK_Alice,PK_Bob,params,splits,MAX)
     - Alice's shared secret: the j-invariant of E_AB.
     */
 
-    A:=PK_Bob[1]; C:=1;  // starting on Bob's Montgomery curve
+    A:=get_A(PK_Bob[1],PK_Bob[2],PK_Bob[3]); 
+    C:=1;  // starting on Bob's Montgomery curve
+
+    if validate then
+        "Bob's PK valid?";
+        validate_PKB(A,PK_Bob[1],PK_Bob[2],PK_Bob[3],eA);
+    end if;
+
     // computes R=phi_B(xPA)+SK_Alice*phi_B(xQA) via 3 point ladder
-    RX,RZ:=LADDER_3_pt(SK_Alice,PK_Bob[2],PK_Bob[3],PK_Bob[4],A,Alice);   
+    RX,RZ:=LADDER_3_pt(SK_Alice,PK_Bob[1],PK_Bob[2],PK_Bob[3],A,Alice);   
 
 	isos:=0; mulm:=0;
 
@@ -1334,7 +1368,7 @@ end function;
 ///////////////////////// SIMPLE BUT SLOW VERSION //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-shared_secret_Bob_simple:=function(SK_Bob,PK_Alice)
+shared_secret_Bob_simple:=function(SK_Bob,PK_Alice,validate)
 
     /*
     This function generates Bob's shared secret from his secret key and Alice's
@@ -1343,15 +1377,22 @@ shared_secret_Bob_simple:=function(SK_Bob,PK_Alice)
     
     Input: 
     - Bob's secret key SK_Bob, a random number between 1 and oB-1,
-    - Alice's public key PK_Alice=[A,phi_A(x(PB)),phi_A(x(QB)),phi_A(x(QB-PB))].
+    - Alice's public key PK_Alice=[phi_A(x(PB)),phi_A(x(QB)),phi_A(x(QB-PB))].
 
     Output: 
     - Bob's shared secret: the j-invariant of E_BA.
     */
 
-    A:=PK_Alice[1]; C:=1; // starting on Alice's Montgomery curve
+    A:=get_A(PK_Alice[1],PK_Alice[2],PK_Alice[3]); 
+    C:=1; // starting on Alice's Montgomery curve
+
+    if validate then
+        "Alice's PK valid?";
+        validate_PKA(A,PK_Alice[1],PK_Alice[2],PK_Alice[3],eB);
+    end if;
+
     // computes R=phi_A(xPB)+SK_Bob*phi_A(xQB) via 3 point ladder
-    RX,RZ:=LADDER_3_pt(SK_Bob,PK_Alice[2],PK_Alice[3],PK_Alice[4],A,Bob);   
+    RX,RZ:=LADDER_3_pt(SK_Bob,PK_Alice[1],PK_Alice[2],PK_Alice[3],A,Bob);   
 
 	isos:=0; mulm:=0;
 
@@ -1378,7 +1419,7 @@ end function;
 //////////////////////////////// FAST //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-shared_secret_Bob_fast:=function(SK_Bob,PK_Alice,params,splits,MAX)
+shared_secret_Bob_fast:=function(SK_Bob,PK_Alice,params,splits,MAX,validate)
 
     /*
     This function generates Bob's shared secret from his secret key and Alice's
@@ -1387,7 +1428,7 @@ shared_secret_Bob_fast:=function(SK_Bob,PK_Alice,params,splits,MAX)
     
     Input: 
     - Bob's secret key SK_Bob, a random number between 1 and oB-1,
-    - Alice's public key PK_Alice=[A,phi_A(xPB),phi_A(xQB),phi_A(x(QB-PB))],
+    - Alice's public key PK_Alice=[phi_A(xPB),phi_A(xQB),phi_A(x(QB-PB))],
     - the parameter "splits", a vector that guides the optimal route through the 
       isogeny tree; it is generated individually for Bob using 
       "optimalstrategies.m" and the ratios of 3-isogeny evaluation versus 
@@ -1399,9 +1440,16 @@ shared_secret_Bob_fast:=function(SK_Bob,PK_Alice,params,splits,MAX)
     - Bob's shared secret: the j-invariant of E_BA.
     */
 
-    A:=PK_Alice[1]; C:=1; // starting on Alice's Montgomery curve
+    A:=get_A(PK_Alice[1],PK_Alice[2],PK_Alice[3]); 
+    C:=1; // starting on Alice's Montgomery curve
+
+    if validate then
+        "Alice's PK valid?";
+        validate_PKA(A,PK_Alice[1],PK_Alice[2],PK_Alice[3],eB);
+    end if;
+
     // computes R=phi_A(xPB)+SK_Bob*phi_A(xQB) via 3 point ladder
-    RX,RZ:=LADDER_3_pt(SK_Bob,PK_Alice[2],PK_Alice[3],PK_Alice[4],A,Bob);   
+    RX,RZ:=LADDER_3_pt(SK_Bob,PK_Alice[1],PK_Alice[2],PK_Alice[3],A,Bob);   
 
 	pts:=[];
 	index:=0;
@@ -1484,23 +1532,17 @@ PK_Bob_fast:=keygen_Bob_fast(SK_Bob,params_Bob,splits_Bob,MAX_Bob);
 
 "Result from simple key gen equal to result from fast key gen?", 
 PK_Bob eq PK_Bob_fast;
-"====================================================================";
-//*
-// Optional validation of public keys.
-load "Validate.mag";
 
-"Alice's PK valid?", 
-validate_PKA(PK_Alice[1],PK_Alice[2],PK_Alice[3],PK_Alice[4],eB);
-"Bob's PK valid?", 
-validate_PKB(PK_Bob[1],PK_Bob[2],PK_Bob[3],PK_Bob[4],eA);
 "====================================================================";
-//*/
+// Optional validation of public keys.
+validate:=true;
+"====================================================================";
 
 "Generating shared secret for Alice... (simple algorithm).";
-secret_Alice:=shared_secret_Alice_simple(SK_Alice,PK_Bob);
+secret_Alice:=shared_secret_Alice_simple(SK_Alice,PK_Bob,validate);
 "Generating shared secret for Alice... (fast algorithm).";
 secret_Alice_fast:=shared_secret_Alice_fast(SK_Alice,PK_Bob_fast,
-                                         params_Alice,splits_Alice,MAX_Alice);
+                                         params_Alice,splits_Alice,MAX_Alice,validate);
 "Done with Alice's shared secret computation.\n";
 
 "Results from simple and fast algorithms equal?", 
@@ -1508,10 +1550,10 @@ secret_Alice eq secret_Alice_fast;
 "====================================================================";
 
 "Generating shared secret for Bob... (simple algorithm).";
-secret_Bob:=shared_secret_Bob_simple(SK_Bob,PK_Alice);
+secret_Bob:=shared_secret_Bob_simple(SK_Bob,PK_Alice,validate);
 "Generating shared secret for Bob... (fast algorithm).";
 secret_Bob_fast:=shared_secret_Bob_fast(SK_Bob,PK_Alice_fast,params_Bob,
-                                                       splits_Bob,MAX_Bob);
+                                                       splits_Bob,MAX_Bob,validate);
 "Done with Bob's shared secret computation.\n";
 
 "Results from simple and fast algorithms equal?", secret_Bob eq secret_Bob_fast;
@@ -1519,4 +1561,7 @@ secret_Bob_fast:=shared_secret_Bob_fast(SK_Bob,PK_Alice_fast,params_Bob,
 "Shared secrets are equal?", secret_Alice_fast eq secret_Bob_fast;
 "";
 "====================================================================";
+
+
+
 

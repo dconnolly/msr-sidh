@@ -24,12 +24,15 @@ ZPQ<P,Q> := PolynomialRing(Z,2);
 ////////////////////////////////////////////////////////////////////////////////
 
 nA := 185;          // Computing 4^nA-isogenies
-pA := RR!(2*12.9);  // Linux cost for 2 doublings
-qA := RR!(22.8);    // Linux cost for 4-isogeny evaluation
+//pA := RR!(2*12.9);  // Linux cost for 2 doublings
+//qA := RR!(22.8);    // Linux cost for 4-isogeny evaluation
+// New op counts 2016-06-15
+pA := RR!(2*12.1);  // Linux cost for 2 doublings
+qA := RR!(21.6);    // Linux cost for 4-isogeny evaluation
 
 nB := 239;          // Computing 3^nB-isogenies
-pB := RR!27.8;      // Linux cost for tripling
-qB := RR!17.0;      // Linux cost for 3-isogeny evaluation
+pB := RR!24.3;      // Linux cost for tripling
+qB := RR!16.0;      // Linux cost for 3-isogeny evaluation
 
 ////////////////////////////////////////////////////////////////////////////////
 

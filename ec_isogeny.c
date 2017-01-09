@@ -441,40 +441,33 @@ void first_4_isog(point_proj_t P, f2elm_t A, f2elm_t Aout, f2elm_t Cout, PCurveI
 }
 
 
-void xTPL(point_proj_t P, point_proj_t Q, f2elm_t A, f2elm_t C)
+void xTPL(point_proj_t P, point_proj_t Q, f2elm_t A24, f2elm_t C24)
 { // Tripling of a Montgomery point in projective coordinates (X:Z).
-  // Input: projective Montgomery x-coordinates P = (X:Z), where x=X/Z and Montgomery curve constant A4=4*A.
+  // Input: projective Montgomery x-coordinates P = (X:Z), where x=X/Z and Montgomery curve constant A/C.
   // Output: projective Montgomery x-coordinates Q = 3*P = (X3:Z3).
     f2elm_t t0, t1, t2, t3, t4, t5;
-    
-    fp2add751(P->X, P->Z, t2);                         // t2 = X+Z
-    fp2sqr751_mont(P->X, t0);                          // t0 = X^2
-    fp2sqr751_mont(P->Z, t1);                          // t1 = Z^2
-    fp2sqr751_mont(t2, t2);                            // t2 = (X+Z)^2
-    fp2mul751_mont(t0, C, t3);                         // t3 = C*X^2
-    fp2sub751(t2, t0, t2);                             // t2 = (X+Z)^2-X^2
-    fp2mul751_mont(t1, C, t4);                         // t4 = C*Z^2
-    fp2sub751(t2, t1, t2);                             // t2 = 2XZ = (X+Z)^2-X^2-Z^2
-    fp2add751(t3, t4, t5);                             // t5 = C*X^2+C*Z^2
-    fp2mul751_mont(t2, A, t2);                         // t2 = 2AXZ
-    fp2add751(t3, t3, t3);                             // t3 = 2C*X^2 
-    fp2add751(t4, t4, t4);                             // t4 = 2C*Z^2
-    fp2add751(t3, t2, t3);                             // t3 = 2C*X^2+2AXZ
-    fp2add751(t4, t2, t4);                             // t4 = 2C*Z^2+2AXZ
-    fp2add751(t3, t5, t3);                             // t3 = 2C*X^2+2AXZ + C*X^2+C*Z^2
-    fp2add751(t4, t5, t4);                             // t4 = 2C*Z^2+2AXZ + C*X^2+C*Z^2
-    fp2sub751(t0, t1, t2);                             // t2 = X^2-Z^2
-    fp2add751(t0, t0, t0);                             // t0 = 2X^2
-    fp2add751(t1, t1, t1);                             // t1 = 2Z^2
-    fp2mul751_mont(t2, t5, t2);                        // t2 = (X^2-Z^2)(C*X^2+C*Z^2)
-    fp2mul751_mont(t1, t3, t1);                        // t1 = 2Z^2*[2C*X^2+2AXZ+C*X^2+C*Z^2]
-    fp2mul751_mont(t0, t4, t0);                        // t0 = 2X^2*[2C*Z^2+2AXZ+C*X^2+C*Z^2]
-    fp2sub751(t1, t2, t1);                             // t1 = 2Z^2*[2C*X^2+2AXZ+C*X^2+C*Z^2] - (X^2-Z^2)(C*X^2+C*Z^2)
-    fp2add751(t0, t2, t0);                             // t0 = 2X^2*[2C*Z^2+2AXZ+C*X^2+C*Z^2] + (X^2-Z^2)(C*X^2+C*Z^2)
-    fp2sqr751_mont(t1, t1);                            // t1 = [2Z^2*[2C*X^2+2AXZ+C*X^2+C*Z^2] - (X^2-Z^2)(C*X^2+C*Z^2)]^2
-    fp2sqr751_mont(t0, t0);                            // t0 = [2X^2*[2C*Z^2+2AXZ+C*X^2+C*Z^2] + (X^2-Z^2)(C*X^2+C*Z^2)]^2
-    fp2mul751_mont(P->X, t1, Q->X);                    // X3 = X*[2Z^2*[2C*X^2+2AXZ+C*X^2+C*Z^2] - (X^2-Z^2)(C*X^2+C*Z^2)]^2
-    fp2mul751_mont(P->Z, t0, Q->Z);                    // Z3 = Z*[2X^2*[2C*Z^2+2AXZ+C*X^2+C*Z^2] + (X^2-Z^2)(C*X^2+C*Z^2)]^2
+
+    fp2sub751(P->X, P->Z, t2);                         // t2 = X-Z           
+    fp2add751(P->X, P->Z, t3);                         // t3 = X+Z 
+    fp2sqr751_mont(t2, t0);                            // t0 = t2^2 
+    fp2sqr751_mont(t3, t1);                            // t1 = t3^2 
+    fp2mul751_mont(t0, C24, t4);                       // t4 = C24*t0 
+    fp2mul751_mont(t1, t4, t5);                        // t5 = t4*t1
+    fp2sub751(t1, t0, t1);                             // t1 = t1-t0 
+    fp2mul751_mont(A24, t1, t0);                       // t0 = A24*t1
+    fp2add751(t4, t0, t4);                             // t4 = t4+t0
+    fp2mul751_mont(t1, t4, t4);                        // t4 = t4*t1
+    fp2add751(t5, t4, t0);                             // t0 = t5+t4
+    fp2sub751(t5, t4, t1);                             // t1 = t5-t4
+    fp2mul751_mont(t0, t2, t0);                        // t0 = t2*t0
+    fp2mul751_mont(t1, t3, t1);                        // t1 = t3*t1
+    fp2sub751(t0, t1, t4);                             // t4 = t0-t1
+    fp2add751(t0, t1, t5);                             // t5 = t0+t1
+    fp2sqr751_mont(t4, t4);                            // t4 = t4^2
+    fp2sqr751_mont(t5, t5);                            // t5 = t5^2
+    fp2mul751_mont(P->X, t4, t4);                      // t4 = X*t4
+    fp2mul751_mont(P->Z, t5, Q->X);                    // X3 = Z*t5
+    fp2copy751(t4, Q->Z);                              // Z3 = t4
 }
 
 
@@ -482,12 +475,16 @@ void xTPLe(point_proj_t P, point_proj_t Q, f2elm_t A, f2elm_t C, int e)
 { // Computes [3^e](X:Z) on Montgomery curve with projective constant via e repeated triplings.
   // Input: projective Montgomery x-coordinates P = (XP:ZP), such that xP=XP/ZP and Montgomery curve constant A/C.
   // Output: projective Montgomery x-coordinates P <- (3^e)*P.
+    f2elm_t A24, C24;
     int i;
-      
+    
+    fp2add751(C, C, A24);                           
+    fp2add751(A24, A24, C24);                    
+    fp2add751(A24, A, A24);       
     copy_words((digit_t*)P, (digit_t*)Q, 2*2*NWORDS_FIELD);
 
     for (i = 0; i < e; i++) {
-        xTPL(Q, Q, A, C);
+        xTPL(Q, Q, A24, C24);
     }
 }
 
@@ -510,7 +507,7 @@ void get_3_isog(point_proj_t P, f2elm_t A, f2elm_t C)
     fp2sub751(A, t1, A);                               // A = A-t1 
     fp2sub751(A, t1, A);                               // A = A-t1 
     fp2sub751(A, t1, A);                               // A = A-t1     
-    fp2mul751_mont(P->X, P->Z, t1);                    // t1 = X*Z    
+    fp2mul751_mont(P->X, P->Z, t1);                    // t1 = X*Z    // ms trade-off possible (1 mul for 1sqr + 1add + 2sub)
     fp2mul751_mont(C, t1, C);                          // C = C*t1
 }
 
@@ -534,24 +531,20 @@ void eval_3_isog(point_proj_t P, point_proj_t Q)
 }
 
 
-void inv_4_way(f2elm_t z1, f2elm_t z2, f2elm_t z3, f2elm_t z4)
-{ // 4-way simultaneous inversion
-  // Input:  z1,z2,z3,z4
-  // Output: 1/z1,1/z2,1/z3,1/z4 (override inputs).
-    f2elm_t t0, t1, t2;
+void inv_3_way(f2elm_t z1, f2elm_t z2, f2elm_t z3)
+{ // 3-way simultaneous inversion
+  // Input:  z1,z2,z3
+  // Output: 1/z1,1/z2,1/z3 (override inputs).
+    f2elm_t t0, t1, t2, t3;
 
     fp2mul751_mont(z1, z2, t0);                      // t0 = z1*z2
-    fp2mul751_mont(z3, z4, t1);                      // t1 = z3*z4
-    fp2mul751_mont(t0, t1, t2);                      // t2 = z1*z2*z3*z4
-    fp2inv751_mont(t2);                              // t2 = 1/(z1*z2*z3*z4)
-    fp2mul751_mont(t0, t2, t0);                      // t0 = 1/(z3*z4) 
-    fp2mul751_mont(t1, t2, t1);                      // t1 = 1/(z1*z2) 
-    fp2mul751_mont(t0, z3, t2);                      // t2 = 1/z4
-    fp2mul751_mont(t0, z4, z3);                      // z3 = 1/z3
-    fp2copy751(t2, z4);                              // z4 = 1/z4
-    fp2mul751_mont(z1, t1, t2);                      // t2 = 1/z2
-    fp2mul751_mont(z2, t1, z1);                      // z1 = 1/z1
-    fp2copy751(t2, z2);                              // z2 = 1/z2
+    fp2mul751_mont(z3, t0, t1);                      // t1 = z1*z2*z3
+    fp2inv751_mont(t1);                              // t1 = 1/(z1*z2*z3)
+    fp2mul751_mont(z3, t1, t2);                      // t2 = 1/(z1*z2) 
+    fp2mul751_mont(t2, z2, t3);                      // t3 = 1/z1
+    fp2mul751_mont(t2, z1, z2);                      // z2 = 1/z2
+    fp2mul751_mont(t0, t1, z3);                      // z3 = 1/z3
+    fp2copy751(t3, z1);                              // z1 = 1/z1
 }
 
 
@@ -567,4 +560,27 @@ void distort_and_diff(felm_t xP, point_proj_t D, PCurveIsogenyStruct CurveIsogen
     fpcopy751(D->X[0], D->X[1]);                     // XD = XD*i
     fpzero751(D->X[0]);          
     fpadd751(xP, xP, D->Z[0]);                       // ZD = xP+xP
+}
+
+
+void get_A(f2elm_t xP, f2elm_t xQ, f2elm_t xR, f2elm_t A, PCurveIsogenyStruct CurveIsogeny)
+{ // Given the x-coordinates of P, Q, and R, returns the value A corresponding to the Montgomery curve E_A: y^2=x^3+A*x^2+x such that R=Q-P on E_A.
+  // Input:  the x-coordinates xP, xQ, and xR of the points P, Q and R.
+  // Output: the coefficient A corresponding to the curve E_A: y^2=x^3+A*x^2+x.
+    f2elm_t t0, t1, one = {0};
+    
+    fpcopy751(CurveIsogeny->Montgomery_one, one[0]);
+    fp2add751(xP, xQ, t1);                           // t1 = xP+xQ
+    fp2mul751_mont(xP, xQ, t0);                      // t0 = xP*xQ
+    fp2mul751_mont(xR, t1, A);                       // A = xR*t1
+    fp2add751(t0, A, A);                             // A = A+t0
+    fp2mul751_mont(t0, xR, t0);                      // t0 = t0*xR
+    fp2sub751(A, one, A);                            // A = A-1
+    fp2add751(t0, t0, t0);                           // t0 = t0+t0
+    fp2add751(t1, xR, t1);                           // t1 = t1+xR
+    fp2add751(t0, t0, t0);                           // t0 = t0+t0
+    fp2sqr751_mont(A, A);                            // A = A^2
+    fp2inv751_mont(t0);                              // t0 = 1/t0
+    fp2mul751_mont(A, t0, A);                        // A = A*t0
+    fp2sub751(A, t1, A);                             // Afinal = A-t1
 }

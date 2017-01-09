@@ -38,7 +38,7 @@ extern "C" {
 typedef digit_t felm_t[NWORDS_FIELD];                             // Datatype for representing 751-bit field elements (768-bit max.)
 typedef digit_t dfelm_t[2*NWORDS_FIELD];                          // Datatype for representing double-precision 2x751-bit field elements (2x768-bit max.) 
 typedef felm_t  f2elm_t[2];                                       // Datatype for representing quadratic extension field elements GF(p751^2)
-typedef f2elm_t publickey_t[4];                                   // Datatype for representing public keys equivalent to four GF(p751^2) elements
+typedef f2elm_t publickey_t[3];                                   // Datatype for representing public keys equivalent to three GF(p751^2) elements
         
 typedef struct { f2elm_t x; f2elm_t y; } point_affine;            // Point representation in affine coordinates on Montgomery curve.
 typedef point_affine point_t[1]; 
@@ -212,7 +212,7 @@ static __inline unsigned int is_digit_lessthan_ct(digit_t x, digit_t y)
 
 
 // Multiprecision multiplication selection
-#if (TARGET == TARGET_AMD64)
+#if defined(GENERIC_IMPLEMENTATION) && (TARGET == TARGET_AMD64)
     #define mp_mul_comba         mp_mul
 #else
     #define mp_mul_schoolbook    mp_mul
@@ -269,6 +269,9 @@ extern void fpneg751(digit_t* a);
 // Modular division by two, c = a/2 mod p751.
 void fpdiv2_751(digit_t* a, digit_t* c);
 
+// Modular correction to reduce field element a in [0, 2*p751-1] to [0, p751-1].
+void fpcorrection751(digit_t* a);
+
 // 751-bit Montgomery reduction, c = a mod p
 void rdc_mont(digit_t* a, digit_t* c);
             
@@ -308,6 +311,9 @@ extern void fp2sub751(f2elm_t a, f2elm_t b, f2elm_t c);
 
 // GF(p751^2) division by two, c = a/2  in GF(p751^2) 
 void fp2div2_751(f2elm_t a, f2elm_t c);
+
+// Modular correction, a = a in GF(p751^2)
+void fp2correction751(f2elm_t a);
             
 // GF(p751^2) squaring using Montgomery arithmetic, c = a^2 in GF(p751^2)
 void fp2sqr751_mont(f2elm_t a, f2elm_t c);
@@ -381,7 +387,7 @@ void eval_4_isog(point_proj_t P, f2elm_t* coeff);
 void first_4_isog(point_proj_t P, f2elm_t A, f2elm_t Aout, f2elm_t Cout, PCurveIsogenyStruct CurveIsogeny);
 
 // Tripling of a Montgomery point in projective coordinates (X:Z).
-void xTPL(point_proj_t P, point_proj_t Q, f2elm_t A, f2elm_t C);
+void xTPL(point_proj_t P, point_proj_t Q, f2elm_t A24, f2elm_t C24);
 
 // Computes [3^e](X:Z) on Montgomery curve with projective constant via e repeated triplings.
 void xTPLe(point_proj_t P, point_proj_t Q, f2elm_t A, f2elm_t C, int e);
@@ -395,11 +401,24 @@ void get_3_isog(point_proj_t P, f2elm_t A, f2elm_t C);
 // Computes the 3-isogeny R=phi(X:Z), given projective point (X3:Z3) of order 3 on a Montgomery curve and a point P = (X:Z).
 void eval_3_isog(point_proj_t P, point_proj_t Q);
 
-// 4-way simultaneous inversion
-void inv_4_way(f2elm_t z1, f2elm_t z2, f2elm_t z3, f2elm_t z4);
+// 3-way simultaneous inversion
+void inv_3_way(f2elm_t z1, f2elm_t z2, f2elm_t z3);
 
 // Computing the point D = (x(Q-P),z(Q-P))
 void distort_and_diff(felm_t xP, point_proj_t d, PCurveIsogenyStruct CurveIsogeny);
+
+// Given the x-coordinates of P, Q, and R, returns the value A corresponding to the Montgomery curve E_A: y^2=x^3+A*x^2+x such that R=Q-P on E_A.
+void get_A(f2elm_t xP, f2elm_t xQ, f2elm_t xR, f2elm_t A, PCurveIsogenyStruct CurveIsogeny);
+
+/************ Public key validation functions *************/
+
+// Validation of Alice's public key (ran by Bob)
+// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
+CRYPTO_STATUS Validate_PKA(f2elm_t A, publickey_t PKA, bool* valid, PCurveIsogenyStruct CurveIsogeny);
+
+// Validation of Bob's public key (ran by Alice)
+// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
+CRYPTO_STATUS Validate_PKB(f2elm_t A, publickey_t PKB, bool* valid, PCurveIsogenyStruct CurveIsogeny);
 
 
 #ifdef __cplusplus

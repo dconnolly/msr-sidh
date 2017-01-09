@@ -298,40 +298,34 @@ void clear_words(void* mem, digit_t nwords);
 // Alice's key-pair generation
 // It produces a private key pPrivateKeyA and computes the public key pPublicKeyA.
 // The private key is an even integer in the range [2, oA-2], where oA = 2^372 (i.e., 372 bits in total).  
-// The public key consists of 4 elements in GF(p751^2), i.e., 751 bytes in total.
+// The public key consists of 3 elements in GF(p751^2), i.e., 564 bytes.
 // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
 CRYPTO_STATUS KeyGeneration_A(unsigned char* pPrivateKeyA, unsigned char* pPublicKeyA, PCurveIsogenyStruct CurveIsogeny);
 
 // Bob's key-pair generation
 // It produces a private key pPrivateKeyB and computes the public key pPublicKeyB.
-// The private key is an integer in the range [1, oB-1], where oA = 3^239 (i.e., 379 bits in total). 
-// The public key consists of 4 elements in GF(p751^2), i.e., 751 bytes in total.
+// The private key is an integer in the range [1, oB-1], where oA = 3^239 (i.e., 379 bits in total).  
+// The public key consists of 3 elements in GF(p751^2), i.e., 564 bytes.
 // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
 CRYPTO_STATUS KeyGeneration_B(unsigned char* pPrivateKeyB, unsigned char* pPublicKeyB, PCurveIsogenyStruct CurveIsogeny);
-
-// Validation of Alice's public key (ran by Bob)
-// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS Validate_PKA(unsigned char* pPublicKeyA, bool* valid, PCurveIsogenyStruct CurveIsogeny);
-
-// Validation of Bob's public key (ran by Alice)
-// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS Validate_PKB(unsigned char* pPublicKeyB, bool* valid, PCurveIsogenyStruct CurveIsogeny);
 
 // Alice's shared secret generation
 // It produces a shared secret key pSharedSecretA using her secret key pPrivateKeyA and Bob's public key pPublicKeyB
 // Inputs: Alice's pPrivateKeyA is an even integer in the range [2, oA-2], where oA = 2^372 (i.e., 372 bits in total). 
-//         Bob's pPublicKeyB consists of 4 elements in GF(p751^2), i.e., 751 bytes in total.
+//         Bob's pPublicKeyB consists of 3 elements in GF(p751^2), i.e., 564 bytes.
+//         "validate" flag that indicates if Alice must validate Bob's public key. 
 // Output: a shared secret pSharedSecretA that consists of one element in GF(p751^2), i.e., 1502 bits in total. 
 // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS SecretAgreement_A(unsigned char* pPrivateKeyA, unsigned char* pPublicKeyB, unsigned char* pSharedSecretA, PCurveIsogenyStruct CurveIsogeny);
+CRYPTO_STATUS SecretAgreement_A(unsigned char* pPrivateKeyA, unsigned char* pPublicKeyB, unsigned char* pSharedSecretA, bool validate, PCurveIsogenyStruct CurveIsogeny);
 
 // Bob's shared secret generation
 // It produces a shared secret key pSharedSecretB using his secret key pPrivateKeyB and Alice's public key pPublicKeyA
 // Inputs: Bob's pPrivateKeyB is an integer in the range [1, oB-1], where oA = 3^239 (i.e., 379 bits in total). 
-//         Alice's pPublicKeyA consists of 4 elements in GF(p751^2), i.e., 751 bytes in total.
+//         Alice's pPublicKeyA consists of 3 elements in GF(p751^2), i.e., 564 bytes.
+//         "validate" flag that indicates if Bob must validate Alice's public key. 
 // Output: a shared secret pSharedSecretB that consists of one element in GF(p751^2), i.e., 1502 bits in total. 
 // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS SecretAgreement_B(unsigned char* pPrivateKeyB, unsigned char* pPublicKeyA, unsigned char* pSharedSecretB, PCurveIsogenyStruct CurveIsogeny);
+CRYPTO_STATUS SecretAgreement_B(unsigned char* pPrivateKeyB, unsigned char* pPublicKeyA, unsigned char* pSharedSecretB, bool validate, PCurveIsogenyStruct CurveIsogeny);
 
 /*********************** Scalar multiplication API using BigMont ***********************/ 
 

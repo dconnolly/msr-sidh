@@ -15,12 +15,13 @@
 // Global constants
 extern const uint64_t p751[NWORDS_FIELD];
 extern const uint64_t p751p1[NWORDS_FIELD]; 
+extern const uint64_t p751x2[NWORDS_FIELD]; 
 
 
 __inline void fpadd751(digit_t* a, digit_t* b, digit_t* c)
 { // Modular addition, c = a+b mod p751.
-  // Inputs: a, b in [0, p751-1] 
-  // Output: c in [0, p751-1] 
+  // Inputs: a, b in [0, 2*p751-1] 
+  // Output: c in [0, 2*p751-1] 
     unsigned int i, carry = 0;
     digit_t mask;
 
@@ -30,21 +31,21 @@ __inline void fpadd751(digit_t* a, digit_t* b, digit_t* c)
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        SUBC(carry, c[i], ((digit_t*)p751)[i], carry, c[i]); 
+        SUBC(carry, c[i], ((digit_t*)p751x2)[i], carry, c[i]); 
     }
     mask = 0 - (digit_t)carry;
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(carry, c[i], ((digit_t*)p751)[i] & mask, carry, c[i]); 
+        ADDC(carry, c[i], ((digit_t*)p751x2)[i] & mask, carry, c[i]); 
     }
 } 
 
 
 __inline void fpsub751(digit_t* a, digit_t* b, digit_t* c)
 { // Modular subtraction, c = a-b mod p751.
-  // Inputs: a, b in [0, p751-1] 
-  // Output: c in [0, p751-1] 
+  // Inputs: a, b in [0, 2*p751-1] 
+  // Output: c in [0, 2*p751-1] 
     unsigned int i, borrow = 0;
     digit_t mask;
 
@@ -55,26 +56,26 @@ __inline void fpsub751(digit_t* a, digit_t* b, digit_t* c)
 
     borrow = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(borrow, c[i], ((digit_t*)p751)[i] & mask, borrow, c[i]); 
+        ADDC(borrow, c[i], ((digit_t*)p751x2)[i] & mask, borrow, c[i]); 
     }
 }
 
 
 __inline void fpneg751(digit_t* a)
 { // Modular negation, a = -a mod p751.
-  // Input/output: a in [0, p751-1] 
+  // Input/output: a in [0, 2*p751-1] 
     unsigned int i, borrow = 0;
 
     for (i = 0; i < NWORDS_FIELD; i++) {
-        SUBC(borrow, ((digit_t*)p751)[i], a[i], borrow, a[i]); 
+        SUBC(borrow, ((digit_t*)p751x2)[i], a[i], borrow, a[i]); 
     }
 }
 
 
 void fpdiv2_751(digit_t* a, digit_t* c)
 { // Modular division by two, c = a/2 mod p751.
-  // Input : a in [0, p751-1] 
-  // Output: c in [0, p751-1] 
+  // Input : a in [0, 2*p751-1] 
+  // Output: c in [0, 2*p751-1] 
     unsigned int i, carry = 0;
     digit_t mask;
         
@@ -85,6 +86,23 @@ void fpdiv2_751(digit_t* a, digit_t* c)
 
     mp_shiftr1(c, NWORDS_FIELD);
 } 
+
+
+void fpcorrection751(digit_t* a)
+{ // Modular correction to reduce field element a in [0, 2*p751-1] to [0, p751-1].
+    unsigned int i, borrow = 0;
+    digit_t mask;
+
+    for (i = 0; i < NWORDS_FIELD; i++) {
+        SUBC(borrow, a[i], ((digit_t*)p751)[i], borrow, a[i]); 
+    }
+    mask = 0 - (digit_t)borrow;
+
+    borrow = 0;
+    for (i = 0; i < NWORDS_FIELD; i++) {
+        ADDC(borrow, a[i], ((digit_t*)p751)[i] & mask, borrow, a[i]); 
+    }
+}
 
 
 void digit_x_digit(digit_t a, digit_t b, digit_t* c)
@@ -120,7 +138,7 @@ void digit_x_digit(digit_t a, digit_t b, digit_t* c)
     c[1] ^= (ahbh & mask_high) + carry;       // C11
 }
 
-//static __inline 
+ 
 void mp_mul_schoolbook(digit_t* a, digit_t* b, digit_t* c, unsigned int nwords)
 { // Multiprecision schoolbook multiply, c = a*b, where lng(a) = lng(b) = nwords.   
     unsigned int i, j;
@@ -184,12 +202,16 @@ void rdc_mont(dfelm_t ma, felm_t mc)
   // mc = ma*mb*R^-1 mod p751, where ma,mb,mc in [0, p751-1] and R = 2^768.
   // ma and mb are assumed to be in Montgomery representation.
     unsigned int i, j, carry, count = p751_ZERO_WORDS;
-    digit_t mask, UV[2], t = 0, u = 0, v = 0, z[NWORDS_FIELD+1] = {0};
+    digit_t UV[2], t = 0, u = 0, v = 0;
+
+    for (i = 0; i < NWORDS_FIELD; i++) {
+        mc[i] = 0;
+    }
 
     for (i = 0; i < NWORDS_FIELD; i++) {
         for (j = 0; j < i; j++) {
             if (j < (i-p751_ZERO_WORDS+1)) { 
-                MUL(z[j], ((digit_t*)p751p1)[i-j], UV+1, UV[0]);
+                MUL(mc[j], ((digit_t*)p751p1)[i-j], UV+1, UV[0]);
                 ADDC(0, UV[0], v, carry, v); 
                 ADDC(carry, UV[1], u, carry, u); 
                 t += carry; 
@@ -198,7 +220,7 @@ void rdc_mont(dfelm_t ma, felm_t mc)
         ADDC(0, v, ma[i], carry, v); 
         ADDC(carry, u, 0, carry, u); 
         t += carry; 
-        z[i] = v;
+        mc[i] = v;
         v = u;
         u = t;
         t = 0;
@@ -210,7 +232,7 @@ void rdc_mont(dfelm_t ma, felm_t mc)
         }
         for (j = i-NWORDS_FIELD+1; j < NWORDS_FIELD; j++) {
             if (j < (NWORDS_FIELD-count)) { 
-                MUL(z[j], ((digit_t*)p751p1)[i-j], UV+1, UV[0]);
+                MUL(mc[j], ((digit_t*)p751p1)[i-j], UV+1, UV[0]);
                 ADDC(0, UV[0], v, carry, v); 
                 ADDC(carry, UV[1], u, carry, u); 
                 t += carry;
@@ -219,25 +241,11 @@ void rdc_mont(dfelm_t ma, felm_t mc)
         ADDC(0, v, ma[i], carry, v); 
         ADDC(carry, u, 0, carry, u); 
         t += carry; 
-        z[i-NWORDS_FIELD] = v;
+        mc[i-NWORDS_FIELD] = v;
         v = u;
         u = t;
         t = 0;
     }
     ADDC(0, v, ma[2*NWORDS_FIELD-1], carry, v); 
-    ADDC(carry, u, 0, carry, u); 
-    t += carry; 
-    z[NWORDS_FIELD-1] = v;
-    z[NWORDS_FIELD] = u;
-
-    // Final, constant-time subtraction     
-    carry = mp_sub(z, (digit_t*)&p751, mc, NWORDS_FIELD);     // (carry, mc) = z - p751
-    mask = 0 - (digit_t)carry;                                // if mc < 0 then mask = 0xFF..F, else if mc >= 0 then mask = 0x00..0
-
-    carry = 0;
-    for (i = 0; i < NWORDS_FIELD; i++) {                      // mc = mc + (mask & p751)
-        ADDC(carry, mc[i], ((digit_t*)p751)[i] & mask, carry, mc[i]);
-    }
-
-    return;
+    mc[NWORDS_FIELD-1] = v;
 }

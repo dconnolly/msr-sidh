@@ -28,12 +28,11 @@ static const uint64_t scalar1[12] = { 0x154A166BBD471DF4, 0xBF7CA3B41010FE6B, 0x
 
 CRYPTO_STATUS cryptotest_kex(PCurveIsogenyStaticData CurveIsogenyData)
 { // Testing key exchange
-    unsigned int pbytes = (CurveIsogenyData->pwordbits + 7)/8;   // Number of bytes in a field element 
-    unsigned int obytes = (CurveIsogenyData->owordbits + 7)/8;   // Number of bytes in an element in [1, order]
+    unsigned int i, pbytes = (CurveIsogenyData->pwordbits + 7)/8;   // Number of bytes in a field element 
+    unsigned int obytes = (CurveIsogenyData->owordbits + 7)/8;      // Number of bytes in an element in [1, order]
     unsigned char *PrivateKeyA, *PrivateKeyB, *PublicKeyA, *PublicKeyB, *SharedSecretA, *SharedSecretB;
     PCurveIsogenyStruct CurveIsogeny = {0};
     CRYPTO_STATUS Status = CRYPTO_SUCCESS;
-    bool valid_PublicKey = false;
     bool passed = true;
         
     // Allocating memory for private keys, public keys and shared secrets
@@ -59,51 +58,64 @@ CRYPTO_STATUS cryptotest_kex(PCurveIsogenyStaticData CurveIsogenyData)
         goto cleanup;
     }
 
-    Status = KeyGeneration_A(PrivateKeyA, PublicKeyA, CurveIsogeny);                     // Get some value as Alice's secret key and compute Alice's public key
-    if (Status != CRYPTO_SUCCESS) {                                                  
-        goto cleanup;
-    }  
-    Status = Validate_PKA(PublicKeyA, &valid_PublicKey, CurveIsogeny);                   // Bob validating Alice's public key
-    if (Status != CRYPTO_SUCCESS) {  
-        goto cleanup;
-    }  
-    if (valid_PublicKey != true) {
-        passed = false;
-        Status = CRYPTO_ERROR_PUBLIC_KEY_VALIDATION;
-        goto finish;
-    }
+    for (i = 0; i < TEST_LOOPS; i++) 
+    {
+        Status = KeyGeneration_A(PrivateKeyA, PublicKeyA, CurveIsogeny);                            // Get some value as Alice's secret key and compute Alice's public key
+        if (Status != CRYPTO_SUCCESS) {                                                  
+            goto cleanup;
+        } 
 
-    Status = KeyGeneration_B(PrivateKeyB, PublicKeyB, CurveIsogeny);                     // Get some value as Bob's secret key and compute Bob's public key
-    if (Status != CRYPTO_SUCCESS) {                                                  
-        goto cleanup;
-    }
-    Status = Validate_PKB(PublicKeyB, &valid_PublicKey, CurveIsogeny);                   // Alice validating Bob's public key
-    if (Status != CRYPTO_SUCCESS) {   
-        goto cleanup;
-    }  
-    if (valid_PublicKey != true) {
-        passed = false;
-        Status = CRYPTO_ERROR_PUBLIC_KEY_VALIDATION;
-        goto finish;
-    }
+        Status = KeyGeneration_B(PrivateKeyB, PublicKeyB, CurveIsogeny);                            // Get some value as Bob's secret key and compute Bob's public key
+        if (Status != CRYPTO_SUCCESS) {                                                  
+            goto cleanup;
+        }
     
-    Status = SecretAgreement_A(PrivateKeyA, PublicKeyB, SharedSecretA, CurveIsogeny);    // Alice computes her shared secret using Bob's public key
-    if (Status != CRYPTO_SUCCESS) {
-        goto cleanup;
-    }    
-    Status = SecretAgreement_B(PrivateKeyB, PublicKeyA, SharedSecretB, CurveIsogeny);    // Bob computes his shared secret using Alice's public key
-    if (Status != CRYPTO_SUCCESS) {
-        goto cleanup;
+        Status = SecretAgreement_A(PrivateKeyA, PublicKeyB, SharedSecretA, false, CurveIsogeny);    // Alice computes her shared secret using Bob's public key
+        if (Status != CRYPTO_SUCCESS) {
+            goto cleanup;
+        }    
+        Status = SecretAgreement_B(PrivateKeyB, PublicKeyA, SharedSecretB, false, CurveIsogeny);    // Bob computes his shared secret using Alice's public key
+        if (Status != CRYPTO_SUCCESS) {
+            goto cleanup;
+        }
+
+        if (compare_words((digit_t*)SharedSecretA, (digit_t*)SharedSecretB, NBYTES_TO_NWORDS(2*pbytes)) != 0) {
+            passed = false;
+            Status = CRYPTO_ERROR_SHARED_KEY;
+            break;
+        }
     }
 
-    if (compare_words((digit_t*)SharedSecretA, (digit_t*)SharedSecretB, NBYTES_TO_NWORDS(2*pbytes)) != 0) {
-        passed = false;
-        Status = CRYPTO_ERROR_SHARED_KEY;
+    if (passed == true) printf("  Key exchange tests ........................................... PASSED");
+    else { printf("  Key exchange tests ... FAILED"); printf("\n"); goto cleanup; }
+    printf("\n"); 
+    
+    // Testing public key validation
+    passed = true;
+
+    for (i = 0; i < TEST_LOOPS; i++) 
+    {
+        Status = SecretAgreement_A(PrivateKeyA, PublicKeyB, SharedSecretA, true, CurveIsogeny);     // Alice computes her shared secret using Bob's public key
+        if (Status == CRYPTO_ERROR_PUBLIC_KEY_VALIDATION) {
+            passed = false;
+            goto finish;
+        }    
+        Status = SecretAgreement_B(PrivateKeyB, PublicKeyA, SharedSecretB, true, CurveIsogeny);     // Bob computes his shared secret using Alice's public key
+        if (Status == CRYPTO_ERROR_PUBLIC_KEY_VALIDATION) {
+            passed = false;
+            goto finish;
+        }
+
+        if (compare_words((digit_t*)SharedSecretA, (digit_t*)SharedSecretB, NBYTES_TO_NWORDS(2*pbytes)) != 0) {
+            passed = false;
+            Status = CRYPTO_ERROR_SHARED_KEY;
+            break;
+        }
     }
 
 finish:
-    if (passed == true) printf("  Key exchange tests ........................................... PASSED");
-    else { printf("  Key exchange tests ... FAILED"); printf("\n"); goto cleanup; }
+    if (passed == true) printf("  Key exchange and validation tests ............................ PASSED");
+    else { printf("  Key exchange and validation tests ... FAILED"); printf("\n"); goto cleanup; }
     printf("\n"); 
 
 cleanup:
@@ -179,7 +191,6 @@ CRYPTO_STATUS cryptorun_kex(PCurveIsogenyStaticData CurveIsogenyData)
     unsigned int pbytes = (CurveIsogenyData->pwordbits + 7)/8;      // Number of bytes in a field element 
     unsigned int n, obytes = (CurveIsogenyData->owordbits + 7)/8;   // Number of bytes in an element in [1, order]
     unsigned char *PrivateKeyA, *PrivateKeyB, *PublicKeyA, *PublicKeyB, *SharedSecretA, *SharedSecretB;
-    bool valid_PublicKey = false;
     PCurveIsogenyStruct CurveIsogeny = {0};
     unsigned long long cycles, cycles1, cycles2;
     CRYPTO_STATUS Status = CRYPTO_SUCCESS;
@@ -244,49 +255,13 @@ CRYPTO_STATUS cryptorun_kex(PCurveIsogenyStaticData CurveIsogenyData)
     else { printf("  Bob's key generation failed"); goto cleanup; } 
     printf("\n");
 
-    // Benchmarking Alice's public key validation
-    passed = true;
-    cycles = 0;
-    for (n = 0; n < BENCH_LOOPS; n++)
-    {
-        cycles1 = cpucycles();
-        Status = Validate_PKA(PublicKeyA, &valid_PublicKey, CurveIsogeny);                     
-        if (Status != CRYPTO_SUCCESS || valid_PublicKey != true) {                                                  
-            passed = false;
-            break;
-        }    
-        cycles2 = cpucycles();
-        cycles = cycles+(cycles2-cycles1);
-    }
-    if (passed) printf("  Alice's public key validation runs in ........................ %10lld cycles", cycles/BENCH_LOOPS);
-    else { printf("  Alice's public key validation failed"); goto cleanup; } 
-    printf("\n");
-
-    // Benchmarking Bob's public key validation
-    passed = true;
-    cycles = 0;
-    for (n = 0; n < BENCH_LOOPS; n++)
-    {
-        cycles1 = cpucycles();
-        Status = Validate_PKB(PublicKeyB, &valid_PublicKey, CurveIsogeny);                     
-        if (Status != CRYPTO_SUCCESS || valid_PublicKey != true) {                                                  
-            passed = false;
-            break;
-        }    
-        cycles2 = cpucycles();
-        cycles = cycles+(cycles2-cycles1);
-    }
-    if (passed) printf("  Bob's public key validation runs in .......................... %10lld cycles", cycles/BENCH_LOOPS);
-    else { printf("  Bob's public key validation failed"); goto cleanup; } 
-    printf("\n");
-
     // Benchmarking Alice's shared key computation
     passed = true;
     cycles = 0;
     for (n = 0; n < BENCH_LOOPS; n++)
     {
         cycles1 = cpucycles();
-        Status = SecretAgreement_A(PrivateKeyA, PublicKeyB, SharedSecretA, CurveIsogeny);                     
+        Status = SecretAgreement_A(PrivateKeyA, PublicKeyB, SharedSecretA, false, CurveIsogeny);                     
         if (Status != CRYPTO_SUCCESS) {                                                  
             passed = false;
             break;
@@ -304,7 +279,7 @@ CRYPTO_STATUS cryptorun_kex(PCurveIsogenyStaticData CurveIsogenyData)
     for (n = 0; n < BENCH_LOOPS; n++)
     {
         cycles1 = cpucycles();
-        Status = SecretAgreement_B(PrivateKeyB, PublicKeyA, SharedSecretB, CurveIsogeny);                     
+        Status = SecretAgreement_B(PrivateKeyB, PublicKeyA, SharedSecretB, false, CurveIsogeny);                     
         if (Status != CRYPTO_SUCCESS) {                                                  
             passed = false;
             break;
@@ -313,6 +288,42 @@ CRYPTO_STATUS cryptorun_kex(PCurveIsogenyStaticData CurveIsogenyData)
         cycles = cycles+(cycles2-cycles1);
     }
     if (passed) printf("  Bob's shared key computation runs in ......................... %10lld cycles", cycles/BENCH_LOOPS);
+    else { printf("  Bob's shared key computation failed"); goto cleanup; } 
+    printf("\n");
+
+    // Benchmarking Alice's shared key computation including public key validation
+    passed = true;
+    cycles = 0;
+    for (n = 0; n < BENCH_LOOPS; n++)
+    {
+        cycles1 = cpucycles();
+        Status = SecretAgreement_A(PrivateKeyA, PublicKeyB, SharedSecretA, true, CurveIsogeny);                     
+        if (Status != CRYPTO_SUCCESS) {                                                  
+            passed = false;
+            break;
+        }    
+        cycles2 = cpucycles();
+        cycles = cycles+(cycles2-cycles1);
+    }
+    if (passed) printf("  Alice's shared key computation including validation runs in .. %10lld cycles", cycles/BENCH_LOOPS);
+    else { printf("  Alice's shared key computation failed"); goto cleanup; } 
+    printf("\n");
+
+    // Benchmarking Bob's shared key computation including public key validation
+    passed = true;
+    cycles = 0;
+    for (n = 0; n < BENCH_LOOPS; n++)
+    {
+        cycles1 = cpucycles();
+        Status = SecretAgreement_B(PrivateKeyB, PublicKeyA, SharedSecretB, true, CurveIsogeny);                     
+        if (Status != CRYPTO_SUCCESS) {                                                  
+            passed = false;
+            break;
+        }    
+        cycles2 = cpucycles();
+        cycles = cycles+(cycles2-cycles1);
+    }
+    if (passed) printf("  Bob's shared key computation including validation runs in .... %10lld cycles", cycles/BENCH_LOOPS);
     else { printf("  Bob's shared key computation failed"); goto cleanup; } 
     printf("\n");
 
