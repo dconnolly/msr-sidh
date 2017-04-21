@@ -42,15 +42,15 @@
     <ClCompile Include="..\..\SIDH_setup.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\validate.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\SIDH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SIDH_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SIDH_api.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

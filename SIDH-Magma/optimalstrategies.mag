@@ -1,10 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-//                                                               
-// Efficient algorithms for supersingular isogeny Diffie-Hellman 
-// Craig Costello, Patrick Longa, Michael Naehrig, 2016         
-// (c) 2016 Microsoft Corporation. All rights reserved.         
-//                                                               
-////////////////////////////////////////////////////////////////////////////////
 //                                                                   
 // Code to compute optimal strategies for isogeny tree traversal      
 //                                                                   
@@ -12,8 +6,17 @@
 // optimal strategies are computed by a dynamic programming approach 
 // as described in DeFeo, Jao, Plut: Towards quantum-resistant       
 // cryptosystems from supersingular elliptic curve isogenies,        
-// J. Math. Crypt., 8(3):209-247, 2014.                              
-//                                                                   
+// J. Math. Crypt., 8(3):209-247, 2014.    
+//        
+// (c) 2016 Microsoft Corporation. All rights reserved.                            
+//                                    
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Reference:
+//                                                              
+// Efficient algorithms for supersingular isogeny Diffie-Hellman 
+// Craig Costello, Patrick Longa, Michael Naehrig, CRYPTO 2016.        
+//                                                                                              
 ////////////////////////////////////////////////////////////////////////////////
 
 clear;

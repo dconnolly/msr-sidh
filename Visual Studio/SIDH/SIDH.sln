@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kex_tests", "..\kex_tests\kex_tests.vcxproj", "{98A48FFD-CE31-44B0-B236-D340521E9C0C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8283DD76-E88A-4B63-ABDE-33F014178413} = {8283DD76-E88A-4B63-ABDE-33F014178413}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "arith_tests", "..\arith_tests\arith_tests.vcxproj", "{C9639168-C3FF-4427-BC3B-D907FF11DE73}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8283DD76-E88A-4B63-ABDE-33F014178413} = {8283DD76-E88A-4B63-ABDE-33F014178413}
 	EndProjectSection
@@ -30,6 +35,16 @@ Global
 		{98A48FFD-CE31-44B0-B236-D340521E9C0C}.Release|Win32.ActiveCfg = Release|Win32
 		{98A48FFD-CE31-44B0-B236-D340521E9C0C}.Release|x64.ActiveCfg = Release|x64
 		{98A48FFD-CE31-44B0-B236-D340521E9C0C}.Release|x64.Build.0 = Release|x64
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Debug|x64.ActiveCfg = Debug|x64
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Debug|x64.Build.0 = Debug|x64
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Generic|Win32.ActiveCfg = Generic|Win32
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Generic|Win32.Build.0 = Generic|Win32
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Generic|x64.ActiveCfg = Generic|x64
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Generic|x64.Build.0 = Generic|x64
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Release|Win32.ActiveCfg = Release|Win32
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Release|x64.ActiveCfg = Release|x64
+		{C9639168-C3FF-4427-BC3B-D907FF11DE73}.Release|x64.Build.0 = Release|x64
 		{8283DD76-E88A-4B63-ABDE-33F014178413}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8283DD76-E88A-4B63-ABDE-33F014178413}.Debug|x64.ActiveCfg = Debug|x64
 		{8283DD76-E88A-4B63-ABDE-33F014178413}.Debug|x64.Build.0 = Debug|x64

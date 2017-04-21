@@ -1,6 +1,6 @@
 /********************************************************************************************
-* SIDH: an efficient supersingular isogeny-based cryptography library for Diffie-Hellman key 
-*       exchange providing 128 bits of quantum security and 192 bits of classical security.
+* SIDH: an efficient supersingular isogeny-based cryptography library for ephemeral 
+*       Diffie-Hellman key exchange.
 *
 *    Copyright (c) Microsoft Corporation. All rights reserved.
 *
@@ -49,7 +49,7 @@ extern "C" {
 #elif defined(__GNUC__)         // GNU GCC compiler
     #define COMPILER COMPILER_GCC   
 #elif defined(__clang__)        // Clang compiler
-    #define COMPILER COMPILER_CLANG   
+    #define COMPILER COMPILER_CLANG
 #else
     #error -- "Unsupported COMPILER"
 #endif
@@ -60,19 +60,22 @@ extern "C" {
 #define TARGET_AMD64        1
 #define TARGET_x86          2
 #define TARGET_ARM          3
+#define TARGET_ARM64        4
 
 #if defined(_AMD64_)
     #define TARGET TARGET_AMD64
     #define RADIX           64
     typedef uint64_t        digit_t;        // Unsigned 64-bit digit
     typedef int64_t         sdigit_t;       // Signed 64-bit digit
+    typedef uint32_t        hdigit_t;       // Unsigned 32-bit digit
     #define NWORDS_FIELD    12              // Number of words of a 751-bit field element
-    #define p751_ZERO_WORDS 5               // Number of "0" digits in the least significant part of p751 - 1     
+    #define p751_ZERO_WORDS 5               // Number of "0" digits in the least significant part of p751 + 1     
 #elif defined(_X86_)
     #define TARGET TARGET_x86
     #define RADIX           32
     typedef uint32_t        digit_t;        // Unsigned 32-bit digit
     typedef int32_t         sdigit_t;       // Signed 32-bit digit
+    typedef uint16_t        hdigit_t;       // Unsigned 16-bit digit
     #define NWORDS_FIELD    24 
     #define p751_ZERO_WORDS 11
 #elif defined(_ARM_)
@@ -80,8 +83,17 @@ extern "C" {
     #define RADIX           32
     typedef uint32_t        digit_t;        // Unsigned 32-bit digit
     typedef int32_t         sdigit_t;       // Signed 32-bit digit
+    typedef uint16_t        hdigit_t;       // Unsigned 16-bit digit
     #define NWORDS_FIELD    24
     #define p751_ZERO_WORDS 11
+#elif defined(_ARM64_)
+    #define TARGET TARGET_ARM64
+    #define RADIX           64
+    typedef uint64_t        digit_t;
+    typedef int64_t         sdigit_t;
+    typedef uint32_t        hdigit_t;
+    #define NWORDS_FIELD    12
+    #define p751_ZERO_WORDS 5
 #else
     #error -- "Unsupported ARCHITECTURE"
 #endif
@@ -89,44 +101,16 @@ extern "C" {
 #define RADIX64         64
 
 
-// Instruction support
+// Selection of generic, portable implementation
 
-#define NO_SIMD_SUPPORT 0
-#define AVX_SUPPORT     1
-#define AVX2_SUPPORT    2
-
-#if defined(_AVX2_)
-    #define SIMD_SUPPORT AVX2_SUPPORT       // AVX2 support selection 
-#elif defined(_AVX_)
-    #define SIMD_SUPPORT AVX_SUPPORT        // AVX support selection 
-#else
-    #define SIMD_SUPPORT NO_SIMD_SUPPORT
-#endif
-
-#if defined(_ASM_)                          // Assembly support selection
-    #define ASM_SUPPORT
-#endif
-
-#if defined(_GENERIC_)                      // Selection of generic, portable implementation
+#if defined(_GENERIC_)                      
     #define GENERIC_IMPLEMENTATION
 #endif
 
 
 // Unsupported configurations
-                         
-#if defined(ASM_SUPPORT) && (OS_TARGET == OS_WIN)
-    #error -- "Assembly is not supported on this platform"
-#endif        
 
-#if defined(ASM_SUPPORT) && defined(GENERIC_IMPLEMENTATION)
-    #error -- "Unsupported configuration"
-#endif        
-
-#if (SIMD_SUPPORT != NO_SIMD_SUPPORT) && defined(GENERIC_IMPLEMENTATION)
-    #error -- "Unsupported configuration"
-#endif
-
-#if (TARGET != TARGET_AMD64) && !defined(GENERIC_IMPLEMENTATION)
+#if (TARGET != TARGET_AMD64) && (TARGET != TARGET_ARM64) && !defined(GENERIC_IMPLEMENTATION)
     #error -- "Unsupported configuration"
 #endif
 
@@ -137,7 +121,10 @@ extern "C" {
     typedef uint64_t uint128_t[2];
 #elif (TARGET == TARGET_AMD64 && OS_TARGET == OS_LINUX) && (COMPILER == COMPILER_GCC || COMPILER == COMPILER_CLANG)
     #define UINT128_SUPPORT
-    typedef unsigned uint128_t __attribute__((mode(TI))); 
+    typedef unsigned uint128_t __attribute__((mode(TI)));
+#elif (TARGET == TARGET_ARM64 && OS_TARGET == OS_LINUX) && (COMPILER == COMPILER_GCC || COMPILER == COMPILER_CLANG)
+    #define UINT128_SUPPORT
+    typedef unsigned uint128_t __attribute__((mode(TI)));
 #elif (TARGET == TARGET_AMD64) && (OS_TARGET == OS_WIN && COMPILER == COMPILER_VC)
     #define SCALAR_INTRIN_SUPPORT   
     typedef uint64_t uint128_t[2];
@@ -154,6 +141,7 @@ extern "C" {
 #define NWORDS64_FIELD  ((NBITS_FIELD+63)/64)               // Number of 64-bit words of a 751-bit field element 
 #define NBITS_ORDER     384
 #define NWORDS_ORDER    ((NBITS_ORDER+RADIX-1)/RADIX)       // Number of words of oA and oB, where oA and oB are the subgroup orders of Alice and Bob, resp.
+#define NWORDS64_ORDER  ((NBITS_ORDER+63)/64)               // Number of 64-bit words of a 384-bit element 
 #define MAXBITS_ORDER   NBITS_ORDER                         
 #define MAXWORDS_ORDER  ((MAXBITS_ORDER+RADIX-1)/RADIX)     // Max. number of words to represent elements in [1, oA-1] or [1, oB].
   
@@ -292,63 +280,6 @@ CRYPTO_STATUS random_BigMont_mod_order(digit_t* random_digits, PCurveIsogenyStru
 
 // Clear "nwords" digits from memory
 void clear_words(void* mem, digit_t nwords);
-
-/*********************** Key exchange API ***********************/ 
-
-// Alice's key-pair generation
-// It produces a private key pPrivateKeyA and computes the public key pPublicKeyA.
-// The private key is an even integer in the range [2, oA-2], where oA = 2^372 (i.e., 372 bits in total).  
-// The public key consists of 3 elements in GF(p751^2), i.e., 564 bytes.
-// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS KeyGeneration_A(unsigned char* pPrivateKeyA, unsigned char* pPublicKeyA, PCurveIsogenyStruct CurveIsogeny);
-
-// Bob's key-pair generation
-// It produces a private key pPrivateKeyB and computes the public key pPublicKeyB.
-// The private key is an integer in the range [1, oB-1], where oA = 3^239 (i.e., 379 bits in total).  
-// The public key consists of 3 elements in GF(p751^2), i.e., 564 bytes.
-// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS KeyGeneration_B(unsigned char* pPrivateKeyB, unsigned char* pPublicKeyB, PCurveIsogenyStruct CurveIsogeny);
-
-// Alice's shared secret generation
-// It produces a shared secret key pSharedSecretA using her secret key pPrivateKeyA and Bob's public key pPublicKeyB
-// Inputs: Alice's pPrivateKeyA is an even integer in the range [2, oA-2], where oA = 2^372 (i.e., 372 bits in total). 
-//         Bob's pPublicKeyB consists of 3 elements in GF(p751^2), i.e., 564 bytes.
-//         "validate" flag that indicates if Alice must validate Bob's public key. 
-// Output: a shared secret pSharedSecretA that consists of one element in GF(p751^2), i.e., 1502 bits in total. 
-// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS SecretAgreement_A(unsigned char* pPrivateKeyA, unsigned char* pPublicKeyB, unsigned char* pSharedSecretA, bool validate, PCurveIsogenyStruct CurveIsogeny);
-
-// Bob's shared secret generation
-// It produces a shared secret key pSharedSecretB using his secret key pPrivateKeyB and Alice's public key pPublicKeyA
-// Inputs: Bob's pPrivateKeyB is an integer in the range [1, oB-1], where oA = 3^239 (i.e., 379 bits in total). 
-//         Alice's pPublicKeyA consists of 3 elements in GF(p751^2), i.e., 564 bytes.
-//         "validate" flag that indicates if Bob must validate Alice's public key. 
-// Output: a shared secret pSharedSecretB that consists of one element in GF(p751^2), i.e., 1502 bits in total. 
-// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS SecretAgreement_B(unsigned char* pPrivateKeyB, unsigned char* pPublicKeyA, unsigned char* pSharedSecretB, bool validate, PCurveIsogenyStruct CurveIsogeny);
-
-/*********************** Scalar multiplication API using BigMont ***********************/ 
-
-// BigMont's scalar multiplication using the Montgomery ladder
-// Inputs: x, the affine x-coordinate of a point P on BigMont: y^2=x^3+A*x^2+x, 
-//         scalar m.
-// Output: xout, the affine x-coordinate of m*(x:1)
-// CurveIsogeny must be set up in advance using SIDH_curve_initialize().
-CRYPTO_STATUS BigMont_ladder(unsigned char* x, digit_t* m, unsigned char* xout, PCurveIsogenyStruct CurveIsogeny);
-
-
-// Encoding of keys for isogeny system "SIDHp751" (wire format):
-// ------------------------------------------------------------
-// Elements over GF(p751) are encoded in 96 octets in little endian format (i.e., the least significant octet located at the leftmost position). 
-// Elements (a+b*i) over GF(p751^2), where a and b are defined over GF(p751), are encoded as {b, a}, with b in the least significant position.
-// Elements over Z_oA and Z_oB are encoded in 48 octets in little endian format. 
-//
-// Private keys pPrivateKeyA and pPrivateKeyB are defined in Z_oA and Z_oB (resp.) and can have values in the range [2, 2^372-2] and [1, 3^239-1], resp.
-// In the key exchange API, they are encoded in 48 octets in little endian format. 
-// Public keys pPublicKeyA and pPublicKeyB consist of four elements in GF(p751^2). In the key exchange API, they are encoded in 768 octets in little
-// endian format. 
-// Shared keys pSharedSecretA and pSharedSecretB consist of one element in GF(p751^2). In the key exchange API, they are encoded in 192 octets in little
-// endian format. 
 
 
 #ifdef __cplusplus

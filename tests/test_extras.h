@@ -1,6 +1,6 @@
 /********************************************************************************************
-* SIDH: an efficient supersingular isogeny-based cryptography library for Diffie-Hellman key 
-*       exchange providing 128 bits of quantum security and 192 bits of classical security.
+* SIDH: an efficient supersingular isogeny-based cryptography library for ephemeral 
+*       Diffie-Hellman key exchange.
 *
 *    Copyright (c) Microsoft Corporation. All rights reserved.
 *
@@ -20,6 +20,13 @@ extern "C" {
 
     
 #include "../SIDH_internal.h"
+
+
+#if (TARGET == TARGET_ARM || TARGET == TARGET_ARM64)
+    #define print_unit printf("nsec");
+#else
+    #define print_unit printf("cycles");
+#endif
 
     
 // Access system counter for benchmarking

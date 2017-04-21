@@ -1,6 +1,6 @@
 /********************************************************************************************
-* SIDH: an efficient supersingular isogeny-based cryptography library for Diffie-Hellman key 
-*       exchange providing 128 bits of quantum security and 192 bits of classical security.
+* SIDH: an efficient supersingular isogeny-based cryptography library for ephemeral 
+*       Diffie-Hellman key exchange.
 *
 *    Copyright (c) Microsoft Corporation. All rights reserved.
 *
@@ -16,7 +16,7 @@
     #include <windows.h>
     #include <intrin.h>
 #endif
-#if (OS_TARGET == OS_LINUX) && (TARGET == TARGET_ARM)
+#if (OS_TARGET == OS_LINUX) && (TARGET == TARGET_ARM || TARGET == TARGET_ARM64)
     #include <time.h>
 #endif
 #include <stdlib.h>
@@ -42,7 +42,7 @@ int64_t cpucycles(void)
 
     asm volatile ("rdtsc\n\t" : "=a" (lo), "=d"(hi));
     return ((int64_t)lo) | (((int64_t)hi) << 32);
-#elif (OS_TARGET == OS_LINUX) && (TARGET == TARGET_ARM)
+#elif (OS_TARGET == OS_LINUX) && (TARGET == TARGET_ARM || TARGET == TARGET_ARM64)
     struct timespec time;
 
     clock_gettime(CLOCK_REALTIME, &time);
@@ -73,7 +73,7 @@ CRYPTO_STATUS random_bytes_test(unsigned int nbytes, unsigned char* random_array
 
 int compare_words(digit_t* a, digit_t* b, unsigned int nwords)
 { // Comparing "nword" elements, a=b? : (1) a!=b, (0) a=b
-  // NOTE: this function does not have constant-time execution. TO BE USED FOR TESTING ONLY.
+  // SECURITY NOTE: this function does not have constant-time execution. TO BE USED FOR TESTING ONLY.
     unsigned int i;
 
     for (i = 0; i < nwords; i++)
@@ -135,7 +135,7 @@ void fp2random751_test(f2elm_t a)
 
 int fpcompare751(felm_t a, felm_t b)
 { // Comparing two field elements, a=b? : (1) a>b, (0) a=b, (-1) a<b
-  // NOTE: this function does not have constant-time execution. TO BE USED FOR TESTING ONLY.
+  // SECURITY NOTE: this function does not have constant-time execution. TO BE USED FOR TESTING ONLY.
     int i;
 
     for (i = NWORDS_FIELD-1; i >= 0; i--)
@@ -150,7 +150,7 @@ int fpcompare751(felm_t a, felm_t b)
 
 int fp2compare751(f2elm_t a, f2elm_t b)
 { // Comparing two quadratic extension field elements, ai=bi? : (1) ai!=bi, (0) ai=bi
-  // NOTE: this function does not have constant-time execution. TO BE USED FOR TESTING ONLY.
+  // SECURITY NOTE: this function does not have constant-time execution. TO BE USED FOR TESTING ONLY.
 
     if (fpcompare751(a[0], b[0])!=0 || fpcompare751(a[1], b[1])!=0) return 1;
     return 0; 

@@ -1,10 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-//                                                               
-// Efficient algorithms for supersingular isogeny Diffie-Hellman 
-// Craig Costello, Patrick Longa, Michael Naehrig, 2016         
-// (c) 2016 Microsoft Corporation. All rights reserved.         
-//                                                                                                                   
-////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                   
 // This is an auxiliary script that serves two purposes:
 //
@@ -22,6 +16,15 @@
 // 
 // The scripts show that these two strategies produce the same result.
 //                                                                                                                   
+// (c) 2016 Microsoft Corporation. All rights reserved.                            
+//                                    
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Reference:
+//                                                              
+// Efficient algorithms for supersingular isogeny Diffie-Hellman 
+// Craig Costello, Patrick Longa, Michael Naehrig, CRYPTO 2016.        
+//                                                                                              
 ////////////////////////////////////////////////////////////////////////////////
 
 clear;
